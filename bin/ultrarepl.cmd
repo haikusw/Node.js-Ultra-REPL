@@ -1,1 +1,1 @@
-@node "%~dp0ultrarepl.js" %*
+@node --harmony_weakmaps "%~dp0ultrarepl.js" %*

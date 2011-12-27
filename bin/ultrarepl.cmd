@@ -1,1 +1,0 @@
-@node --harmony_weakmaps "%~dp0ultrarepl.js" %*

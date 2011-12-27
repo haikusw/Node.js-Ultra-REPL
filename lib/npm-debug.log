@@ -1,0 +1,29 @@
+info it worked if it ends with ok
+verbose cli [ 'nodes.exe',
+verbose cli   'C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+verbose cli   'publish' ]
+info using npm@1.1.0-beta-4
+info using node@v0.7.0-pre
+verbose config file C:\Users\Brandon\.npmrc
+verbose config file C:\Program Files (x86)\nodejs\etc\npmrc
+verbose config file C:\Program Files (x86)\nodejs\node_modules\npm\npmrc
+verbose publish [ '.' ]
+verbose cache add [ '.', null ]
+silly cache add: name, spec, args [ , '.', [ '.', null ] ]
+verbose parsed url { pathname: '.', path: '.', href: '.' }
+ERR! Could not install: .
+ERR! Error: ENOENT, no such file or directory 'C:\Program Files (x86)\nodejs\repl\node_modules\ultra-repl\lib\package.json'
+ERR! Report this *entire* log at:
+ERR!     <http://github.com/isaacs/npm/issues>
+ERR! or email it to:
+ERR!     <npm-@googlegroups.com>
+ERR! 
+ERR! System Windows_NT 6.1.7601
+ERR! command "nodes.exe" "C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "publish"
+ERR! cwd C:\Program Files (x86)\nodejs\repl\node_modules\ultra-repl\lib
+ERR! node -v v0.7.0-pre
+ERR! npm -v 1.1.0-beta-4
+ERR! path C:\Program Files (x86)\nodejs\repl\node_modules\ultra-repl\lib\package.json
+ERR! code ENOENT
+ERR! message ENOENT, no such file or directory 'C:\Program Files (x86)\nodejs\repl\node_modules\ultra-repl\lib\package.json'
+verbose exit [ 1, true ]

@@ -1,1 +1,1 @@
-@node "%~dp0Uultrarepl.js" %*
+@node "%~dp0ultrarepl.js" %*

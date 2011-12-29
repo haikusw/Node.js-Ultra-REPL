@@ -1,9 +1,9 @@
 module.exports = {
-  'Command List'      : alt('q'),
-  'Next Context'      : ctrl('up'),
-  'Previous Context'  : ctrl('down'),
+  'Command List'      : key('f1'),
   'Create Context'    : ctrl_shift('up'),
   'Delete Context'    : ctrl_shift('down'),
+  'Next Context'      : ctrl('up'),
+  'Previous Context'  : ctrl('down'),
   'Reset Context'     : ctrl('r'),
   'Label Context'     : command('label'),
   'Toggle Builtins'   : command('builtins'),
@@ -16,8 +16,8 @@ module.exports = {
   'Inject REPL'       : command('repl'),
 };
 
-// ctrl = command : mac
-// alt = meta     : linux
+// ctrl = command on mac
+// alt = meta on linux
 
 function keyword         (x){ return { type: 'keyword', activation: x } }
 function command         (x){ return { type: 'command', activation: '.' + x } }

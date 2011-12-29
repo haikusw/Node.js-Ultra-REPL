@@ -1,1 +1,1 @@
-@node --harmony "%~dp0ultra-repl.js" %*
+@node "%~dp0ultra-repl.js" %*

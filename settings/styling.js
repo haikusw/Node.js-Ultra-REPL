@@ -1,5 +1,3 @@
-var c = require('../lib/utilities').color;
-
 var styling = function(){
 	return {
 		error: red2,

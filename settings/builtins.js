@@ -17,10 +17,10 @@ module.exports = {
           'module', 'require', 'exports' ],
 
 
-  libs: [ 'assert', 'buffer', 'child_process', 'cluster',
-          'crypto','dgram', 'dns', 'events', 'fs', 'http', 'https', 'net',
-          'os', 'path', 'punycode', 'querystring', 'readline', 'repl',
-          'string_decoder', 'tls', 'tty', 'url', 'util', 'vm', 'zlib' ]
+  libs: [ 'assert', 'buffer', 'child_process', 'cluster', 'crypto','dgram', 'dns',
+          'events', 'fs', 'http', 'https', 'net', 'npm', 'os', 'path', 'punycode',
+          'querystring', 'readline', 'repl', 'string_decoder', 'tls', 'tty', 'url',
+          'util', 'vm', 'zlib' ]
 };
 
 module.exports.all = module.exports.js.concat(module.exports.node, module.exports.misc);

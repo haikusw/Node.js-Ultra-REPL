@@ -42,9 +42,14 @@ var styling = function(){
 		prompt: {
 	    separator: [' ◊ ', green1],
 	    end: [' » ', cyan1],
-	    toggleOff: yellow1,
-	    toggleOn: yellow2,
+	    '--': yellow1,
+	    '++': yellow2,
 	    number: yellow1
+	  },
+	  info: {
+	  	keydisplay: magenta2,
+	  	cadenceDone: red2,
+	  	cadenceLeft: red1
 	  },
 	  context: {
 	    create: [ 'timedPrompt', '++created',         green1    ],

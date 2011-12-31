@@ -10,8 +10,10 @@ module.exports = {
 
   'Toggle Hiddens'    : key('f2'),
   'Toggle Builtins'   : key('f3'),
-  'Toggle Colors'     : key('f4'),
-  'Inspector Depth'   : dot('depth'),
+  'Inspect Depth++'   : key('+ +'),
+  'Inspect Depth--'   : key('- -'),
+  'Toggle Colors'     : ctrl('f4'),
+  'Toggle Key Display': key('f4'),
 
   'Inject REPL'       : key('f5'),
   'Require'           : dot('r'),
@@ -26,9 +28,9 @@ module.exports = {
 // ctrl = command on mac
 // alt = meta on linux
 
-function keyword         (x){ return { type: 'keyword', activation: x } }
-function dot             (x){ return { type: 'command', activation: '.' + x } }
-function key             (x){ return { type: 'keybind', activation: x } }
+function keyword         (x){ return { type: 'keyword', trigger: x } }
+function dot             (x){ return { type: 'command', trigger: '.' + x } }
+function key             (x){ return { type: 'keybind', trigger: x } }
 function ctrl            (x){ return key('ctrl+' + x) }
 function alt             (x){ return key('alt+' + x) }
 function shift           (x){ return key('shift+' + x) }

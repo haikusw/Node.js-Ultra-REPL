@@ -1,26 +1,33 @@
 module.exports = {
   'Command List'      : key('f1'),
+
   'Create Context'    : ctrl_shift('up'),
   'Delete Context'    : ctrl_shift('down'),
   'Next Context'      : ctrl('up'),
   'Previous Context'  : ctrl('down'),
   'Reset Context'     : ctrl('r'),
-  'Label Context'     : command('label'),
+  'Label Context'     : dot('label'),
+
   'Toggle Hiddens'    : key('f2'),
   'Toggle Builtins'   : key('f3'),
   'Toggle Colors'     : key('f4'),
-  'Inspector Depth'   : command('depth'),
-  'Clear'             : command('clear'),
-  'Exit'              : ctrl('z'),
-  'Save Session'      : command('save'),
+  'Inspector Depth'   : dot('depth'),
+
   'Inject REPL'       : key('f5'),
+  'Require'           : dot('r'),
+
+  'Clear Input'       : key('esc'),
+  'Clear Screen'      : key('esc esc'),
+  'Exit'              : key('esc esc esc'),
+
+  'Save Session'      : dot('save'),
 };
 
 // ctrl = command on mac
 // alt = meta on linux
 
 function keyword         (x){ return { type: 'keyword', activation: x } }
-function command         (x){ return { type: 'keyword', activation: '.' + x } }
+function dot             (x){ return { type: 'command', activation: '.' + x } }
 function key             (x){ return { type: 'keybind', activation: x } }
 function ctrl            (x){ return key('ctrl+' + x) }
 function alt             (x){ return key('alt+' + x) }

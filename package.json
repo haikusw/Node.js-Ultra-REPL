@@ -16,6 +16,9 @@
   "bin": {
     "ultra-repl": "./bin/ultra-repl.js"
   },
-  "dependencies": { "harmony-collections": "0.2.0" },
+  "dependencies": {
+    "harmony-collections": "0.2.0",
+    "context-loader": "0.0.2"
+  },
   "devDependencies": {}
 }

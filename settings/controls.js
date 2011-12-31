@@ -11,16 +11,16 @@ module.exports = {
   'Toggle Colors'     : key('f4'),
   'Inspector Depth'   : command('depth'),
   'Clear'             : command('clear'),
-  'Exit'             : ctrl('x'),
+  'Exit'              : ctrl('z'),
   'Save Session'      : command('save'),
-  'Inject REPL'       : command('repl'),
+  'Inject REPL'       : key('f5'),
 };
 
 // ctrl = command on mac
 // alt = meta on linux
 
 function keyword         (x){ return { type: 'keyword', activation: x } }
-function command         (x){ return { type: 'command', activation: '.' + x } }
+function command         (x){ return { type: 'keyword', activation: '.' + x } }
 function key             (x){ return { type: 'keybind', activation: x } }
 function ctrl            (x){ return key('ctrl+' + x) }
 function alt             (x){ return key('alt+' + x) }

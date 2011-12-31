@@ -43,19 +43,21 @@ var styling = function(){
 	    separator: [' ◊ ', green1],
 	    end: [' » ', cyan1],
 	    toggleOff: yellow1,
-	    toggleOn: yellow2
+	    toggleOn: yellow2,
+	    number: yellow1
 	  },
-	  contexts: {
-	    number: yellow1,
-	    created: green1,
-	    deleted: red1,
-	    reset: magenta1,
-	    names: [ green2, yellow2, magenta2, cyan2,
-	             yellow1, magenta1, cyan1, blue2 ]
+	  context: {
+	    create: [ 'timedPrompt', '++created',         green1    ],
+	    remove: [ 'timedPrompt', '--removed †name†',  red1      ],
+	    reset:  [ 'timedPrompt', 'reset',             magenta1  ],
+	    error:  [ 'timedPrompt', '‡',                 red2      ],
+	    change: [ 'updatePrompt' ],
+	    names:  [  green2, yellow2, magenta2, cyan2,
+	               yellow1, magenta1, cyan1, blue2 ]
 	  },
 	};
 }
-
+//‡ †
 
 
 

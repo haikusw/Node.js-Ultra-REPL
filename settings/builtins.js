@@ -16,7 +16,6 @@ module.exports = {
   misc: [ 'global', 'GLOBAL', 'root', '_', '__dirname', '__filename',
           'module', 'require', 'exports' ],
 
-
   libs: [ 'assert', 'buffer', 'child_process', 'cluster', 'crypto','dgram', 'dns',
           'events', 'fs', 'http', 'https', 'net', 'npm', 'os', 'path', 'punycode',
           'querystring', 'readline', 'repl', 'string_decoder', 'tls', 'tty', 'url',

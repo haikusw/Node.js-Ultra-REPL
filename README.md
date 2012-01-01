@@ -14,11 +14,15 @@ You should be greeted with something similar to this upon starting it:
 
 ![startup](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss1.png)
 
+With help shortly after:
+
+![help](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss7.png)
+
 # Basic Usage
 
 To begin with it has all the features Node's built-in REPL does. You write JavaScript, it evaluates it and shows the result. The simplest command is `this` which will spit out the global context and everything in it. The formatting differences are immediately obvious.
 
-![this](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss2.png)
+![this](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss8.png)
 
 ## Commands
 
@@ -27,22 +31,32 @@ In the module folder is a `settings` folder with the `controls.js` file. This fi
 Most settings are unique per context, like depth, hiddens, builtins. There will be a way to set up defaults or presets soon.
 
 ```
-Command List      f1               Shows this list.
-Create Context    ctrl+shift+up    Create, initialize, and switch into a new V8 context.
-Delete Context    ctrl+shift+down  Delete the current V8 context and all objects unreferences externally.
-Next Context      ctrl+up          Instantly switch from current context to the next one in order.
-Previous Context  ctrl+down        Switch to the previous context.
-Reset Context     ctrl+r           Reset current context.
-Label Context     .label           Change the label of the current context.
-Toggle Builtins   f3               Toggle whether default built-in objects are shown.
-Toggle Colors     f4               Toggle whether output is colored.
-Toggle Hiddens    f2               Toggle whether hidden properties are shown.
-Inspector Depth   .depth           Set or view maximum depth to inspect.
-Clear             .clear           Clear the screen.
-Exit              ctrl+x           Exit the REPL.
-Save Session      .save            Save all evaluated commands in this REPL session to a file.
-Inject REPL       .repl            Adds a reference to the live repl object to the current context.
-Auto-Includer                      Type the name of a built-in module to include it on the current context.
+ Command List        f1               Shows this list.
+ Create Context      ctrl+shift+up    Create, initialize, and switch into a new V8 context.
+ Delete Context      ctrl+shift+down  Delete the current V8 context and all objects unreferences externally.
+ Next Context        ctrl+up          Switch to the previous next.
+ Previous Context    ctrl+down        Switch to the previous context.
+ Reset Context       ctrl+r           Reset current context.
+ Label Context       .label           Change the label of the current context.
+
+ Next Page           pgdn             Next page of results.
+ Previous Page       pgup             Previous page of results.
+
+ Toggle Builtins     f3               Toggle whether default built-in objects are shown.
+ Toggle Colors       ctrl+f4          Toggle whether output is colored.
+ Toggle Hiddens      f2               Toggle whether hidden properties are shown.
+ Inspect Depth--     - -              Decrease inspector recurse depth
+ Inspect Depth++     + +              Increase inspector recurse depth
+ Toggle Key Display  f4               Toggle displaying what keys are pressed for checking keybindings.
+
+ Clear Input/Screen  esc              Clear the the input line if it has text or clears the screen if not.
+ Clear Screen        esc esc          Clear the screen.
+ Exit                esc esc esc      Exit the REPL.
+
+ Inject REPL         f5               Adds a reference to the live repl object to the current context.
+ Require             .r               Require for contexts without exposing require to the context. If passed two parameters the
+                                      first is used to name it globally. If exports it a named function its name will be used.
+ Auto-Includer                        Type the name of a built-in module to include it on the current context.
 ```
 The builtin and hidden toggles are particularly useful.
 

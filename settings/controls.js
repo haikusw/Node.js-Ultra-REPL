@@ -21,9 +21,9 @@ module.exports = {
   'Inject REPL'       : key('f5'),
   'Require'           : dot('r'),
 
-  'Clear Input'       : key('esc'),
-  'Clear Screen'      : key('esc esc'),
-  'Exit'              : key('esc esc esc'),
+  'Clear Input/Screen': key('esc'),
+  'Clear Screen'      : shift('esc'),
+  'Exit'              : key('esc esc'),
 
   'Save Session'      : dot('save'),
 };

@@ -22,8 +22,8 @@ module.exports = {
   'Require'           : dot('r'),
 
   'Clear Input/Screen': key('esc'),
-  'Clear Screen'      : shift('esc'),
-  'Exit'              : key('esc esc'),
+  'Clear Screen'      : key('esc esc'),
+  'Exit'              : key('esc esc esc'),
 
   'Save Session'      : dot('save'),
 };

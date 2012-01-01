@@ -47,6 +47,7 @@ var styling = function(){
 	    number: yellow1
 	  },
 	  info: {
+	  	page: bg_cyan2,
 	  	keydisplay: magenta2,
 	  	cadenceDone: red2,
 	  	cadenceLeft: red1
@@ -82,6 +83,23 @@ var yellow1  = 'yellow';
 var yellow2  = 'byellow';
 var magenta1 = 'magenta';
 var magenta2 = 'bmagenta';
+
+var bg_red1     = 'bgred';
+var bg_red2     = 'bgbred';
+var bg_blue1    = 'bgblue';
+var bg_blue2    = 'bgbblue';
+var bg_cyan1    = 'bgcyan';
+var bg_cyan2    = 'bgbcyan';
+var bg_green1   = 'bggreen';
+var bg_green2   = 'bgbgreen';
+var bg_black1   = 'bgblack';
+var bg_black2   = 'bgbblack';
+var bg_white1   = 'bgwhite';
+var bg_white2   = 'bgbwhite';
+var bg_yellow1  = 'bgyellow';
+var bg_yellow2  = 'bgbyellow';
+var bg_magenta1 = 'bgmagenta';
+var bg_magenta2 = 'bgbmagenta';
 
 
 module.exports = styling();

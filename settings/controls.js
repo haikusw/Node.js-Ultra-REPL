@@ -8,6 +8,9 @@ module.exports = {
   'Reset Context'     : ctrl('r'),
   'Label Context'     : dot('label'),
 
+  'Next Page'         : key('pgdn'),
+  'Previous Page'     : key('pgup'),
+
   'Toggle Hiddens'    : key('f2'),
   'Toggle Builtins'   : key('f3'),
   'Inspect Depth++'   : key('+ +'),

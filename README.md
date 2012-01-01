@@ -14,9 +14,6 @@ You should be greeted with something similar to this upon starting it:
 
 ![startup](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss1.png)
 
-With help shortly after:
-
-![help](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss7.png)
 
 # Basic Usage
 
@@ -63,6 +60,18 @@ The builtin and hidden toggles are particularly useful.
 ![hiddens](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss3.png)
 
 ![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss4.png)
+
+
+## Keybindings
+
+UltraREPL supports fully customizable keybindings that provide a lot of room to speed up workflow. ctrl+alt+shift+key combos are possible for a keys excluding number pad. F keys works. All of the default handlers have been removed so that signal interrupts are customizable or skippable.
+
+Beyond normal keybindings, UltraREPL also supports what I'm calling Cadances. That is a set of keybindings executed in order to create a new binding. For example, the default bindings have Clear Input as `esc`, Clear Window as `esc esc` and Quit as `esc esc esc`. Similar to how the sig interrupt functions, but fully customizable with any combination of keys, any amount in order, and to execute any command. Simply string keybinds together with spaces to indicate a Cadance.
+
+Keybindings are found in the settings folder and are easy to edit.
+
+Current defaults:
+![defaults](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss7.png)
 
 
 ## Contexts

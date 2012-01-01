@@ -64,7 +64,7 @@ The builtin and hidden toggles are particularly useful.
 
 ## Keybindings
 
-UltraREPL supports fully customizable keybindings that provide a lot of room to speed up workflow. ctrl+alt+shift+key combos are possible for a keys excluding number pad. F keys works. All of the default handlers have been removed so that signal interrupts are customizable or skippable.
+UltraREPL supports fully customizable keybindings that provide a lot of room to speed up workflow. Every user exposed command can be bound to any set of keys or a repl keyword. ctrl+alt+shift+key combos are possible for a keys excluding number pad. F keys works. All of the default handlers have been removed so that signal interrupts are customizable or skippable.
 
 Beyond normal keybindings, UltraREPL also supports what I'm calling Cadances. That is a set of keybindings executed in order to create a new binding. For example, the default bindings have Clear Input as `esc`, Clear Window as `esc esc` and Quit as `esc esc esc`. Similar to how the sig interrupt functions, but fully customizable with any combination of keys, any amount in order, and to execute any command. Simply string keybinds together with spaces to indicate a Cadance.
 

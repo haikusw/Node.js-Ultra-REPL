@@ -1,65 +1,66 @@
 var styling = function(){
-	return {
-		error: red2,
-		success: green2,
+  return {
+    error: red2,
+    success: green2,
 
-		inspector: {
-		  // falsey
-		  Undefined   : black2,
-		  Null        : black2,
-		  // constructor functions
-		  Constructor : yellow2,
-		  // normal types
-		  Function    : magenta2,
-		  Boolean     : yellow2,
-		  Date        : red2,
-		  Error       : red2,
-		  Number      : yellow1,
-		  RegExp      : red2,
-		  // property names and strings
-		  HString     : green1,
-		  String      : green2,
-		  HConstant   : cyan1,
-		  Constant    : cyan2,
-		  HName       : black2,
-		  Name        : white2,
-		  // meta-labels
-		  More        : red1,
-		  Accessor    : magenta1,
-		  Circular    : red1,
-		  // brackets
-		  Square      : white1,
-		  Curly       : white1
-		},
-		help: {
-			intro: green2,
-	  	names: cyan1,
-	    keybind: yellow1,
-	    keyword: magenta1,
-	    command: green1,
-	    keywords: black2
-	  },
-		prompt: {
-	    separator: [' ◊ ', green1],
-	    end: [' » ', cyan1],
-	    '--': yellow1,
-	    '++': yellow2,
-	    number: yellow1
-	  },
-	  info: {
-	  	page: bg_cyan2,
-	  	keydisplay: magenta2,
-	  	cadenceDone: red2,
-	  	cadenceLeft: red1
-	  },
-	  context: {
-	    create: green1,
-	    remove: red1,
-	    reset:  magenta1,
-	    names:  [  green2, yellow2, magenta2, cyan2,
-	               yellow1, magenta1, cyan1, blue2 ]
-	  },
-	};
+    inspector: {
+      // falsey
+      Undefined   : black2,
+      Null        : black2,
+      // constructor functions
+      Constructor : yellow2,
+      // normal types
+      Function    : magenta2,
+      Boolean     : yellow2,
+      Date        : red2,
+      Error       : red2,
+      Number      : yellow1,
+      RegExp      : red2,
+      // property names and strings
+      HString     : green1,
+      String      : green2,
+      HConstant   : cyan1,
+      Constant    : cyan2,
+      HName       : black2,
+      Name        : white2,
+      // meta-labels
+      More        : red1,
+      Accessor    : magenta1,
+      Circular    : red1,
+      // brackets
+      Square      : white1,
+      Curly       : white1
+    },
+    help: {
+      intro: green2,
+      names: cyan1,
+      keybind: yellow1,
+      keyword: magenta1,
+      command: green1,
+      keywords: black2
+    },
+    intro: [ yellow2, red2 ],
+    prompt: {
+      separator: [' ◊ ', green1],
+      end: [' » ', cyan1],
+      '--': yellow1,
+      '++': yellow2,
+      number: yellow1
+    },
+    info: {
+        page: bg_cyan2,
+        keydisplay: magenta2,
+        cadenceDone: red2,
+        cadenceLeft: red1
+    },
+    context: {
+      create: green1,
+      remove: red1,
+      reset:  magenta1,
+      names:  [  green2, yellow2, magenta2, cyan2,
+                 yellow1, magenta1, cyan1, blue2 ]
+    },
+  };
 }
 //‡ †
 

@@ -19,7 +19,7 @@ You should be greeted with something similar to this upon starting it:
 
 To begin with it has all the features Node's built-in REPL does. You write JavaScript, it evaluates it and shows the result. The simplest command is `this` which will spit out the global context and everything in it. The formatting differences are immediately obvious.
 
-![this](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss8.png)
+![this](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss8.png)
 
 ## Commands
 
@@ -71,7 +71,7 @@ Beyond normal keybindings, UltraREPL also supports what I'm calling Cadances. Th
 Keybindings are found in the settings folder and are easy to edit.
 
 Current defaults:
-![defaults](https://raw.github.com/Benvie/Node.js-Ultra-REPL/experimental/docs/ss7.png)
+![defaults](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss7.png)
 
 
 ## Contexts

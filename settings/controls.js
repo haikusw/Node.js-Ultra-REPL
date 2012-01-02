@@ -13,12 +13,14 @@ module.exports = {
 
   'Toggle Hiddens'    : key('f2'),
   'Toggle Builtins'   : key('f3'),
-  'Inspect Depth++'   : key('+ +'),
-  'Inspect Depth--'   : key('- -'),
-  'Toggle Colors'     : ctrl('f4'),
-  'Toggle Key Display': key('f4'),
+  'Inspect Depth--'   : key('f6'),
+  'Inspect Depth++'   : key('f5'),
+  'Set Inspect Depth' : dot('depth'),
+  'Toggle Colors'     : key('f10'),
 
-  'Inject REPL'       : key('f5'),
+  'Inject REPL'       : key('f11'),
+  'Toggle Key Display': key('f12'),
+
   'Require'           : dot('r'),
 
   'Clear Input/Screen': key('esc'),

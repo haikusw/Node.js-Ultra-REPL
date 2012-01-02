@@ -56,8 +56,6 @@ var styling = function(){
 	    create: green1,
 	    remove: red1,
 	    reset:  magenta1,
-	    error:  red2,
-	    change: '',
 	    names:  [  green2, yellow2, magenta2, cyan2,
 	               yellow1, magenta1, cyan1, blue2 ]
 	  },

@@ -13,8 +13,9 @@ module.exports = {
 
   'Toggle Hiddens'    : key('f2'),
   'Toggle Builtins'   : key('f3'),
-  'Inspect Depth--'   : key('f6'),
+  'Toggle __proto__'  : key('f4'),
   'Inspect Depth++'   : key('f5'),
+  'Inspect Depth--'   : key('f6'),
   'Set Inspect Depth' : dot('depth'),
   'Toggle Colors'     : key('f10'),
 

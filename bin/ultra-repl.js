@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-// var tty = require('tty');
 var UltraREPL = require('../').UltraREPL;
-// var stream = {
-// 	stdin: new tty.ReadStream(0),
-// 	stdout: new tty.WriteStream(1)
-// };
-// //stream.stdout._type = 'tty';
-// stream.stdin.resume();
-new UltraREPL
-//new UltraREPL({ stream: stream })
+
+var fs = require('fs');
+var util = require('util');
+
+try {
+	new UltraREPL
+} catch (e) {
+	fs.writeFileSync('error.log', util.inspect(e, true) + '\n' + util.inspect(global, true, 4));
+}
+

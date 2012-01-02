@@ -21,57 +21,25 @@ To begin with it has all the features Node's built-in REPL does. You write JavaS
 
 ![this](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss8.png)
 
-## Commands
 
-In the module folder is a `settings` folder with the `controls.js` file. This file is easily editable bindings and commands can be edited as you please. Any action can be a keybind or a command, it's up to you.
+## Commands & Keybindings
 
-Most settings are unique per context, like depth, hiddens, builtins. There will be a way to set up defaults or presets soon.
-
-```
- Command List        f1               Shows this list.
- Create Context      ctrl+shift+up    Create, initialize, and switch into a new V8 context.
- Delete Context      ctrl+shift+down  Delete the current V8 context and all objects unreferences externally.
- Next Context        ctrl+up          Switch to the previous next.
- Previous Context    ctrl+down        Switch to the previous context.
- Reset Context       ctrl+r           Reset current context.
- Label Context       .label           Change the label of the current context.
-
- Next Page           pgdn             Next page of results.
- Previous Page       pgup             Previous page of results.
-
- Toggle Builtins     f3               Toggle whether default built-in objects are shown.
- Toggle Colors       ctrl+f4          Toggle whether output is colored.
- Toggle Hiddens      f2               Toggle whether hidden properties are shown.
- Inspect Depth--     - -              Decrease inspector recurse depth
- Inspect Depth++     + +              Increase inspector recurse depth
- Toggle Key Display  f4               Toggle displaying what keys are pressed for checking keybindings.
-
- Clear Input/Screen  esc              Clear the the input line if it has text or clears the screen if not.
- Clear Screen        esc esc          Clear the screen.
- Exit                esc esc esc      Exit the REPL.
-
- Inject REPL         f5               Adds a reference to the live repl object to the current context.
- Require             .r               Require for contexts without exposing require to the context. If passed two parameters the
-                                      first is used to name it globally. If exports it a named function its name will be used.
- Auto-Includer                        Type the name of a built-in module to include it on the current context.
-```
-The builtin and hidden toggles are particularly useful.
-
-![hiddens](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss3.png)
-
-![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss4.png)
-
-
-## Keybindings
+In the module folder is a `settings` folder with the `controls.js` file.
 
 UltraREPL supports fully customizable keybindings that provide a lot of room to speed up workflow. Every user exposed command can be bound to any set of keys or a repl keyword. ctrl+alt+shift+key combos are possible for a keys excluding number pad. F keys works. All of the default handlers have been removed so that signal interrupts are customizable or skippable.
 
 Beyond normal keybindings, UltraREPL also supports what I'm calling Cadances. That is a set of keybindings executed in order to create a new binding. For example, the default bindings have Clear Input as `esc`, Clear Window as `esc esc` and Quit as `esc esc esc`. Similar to how the sig interrupt functions, but fully customizable with any combination of keys, any amount in order, and to execute any command. Simply string keybinds together with spaces to indicate a Cadance.
 
-Keybindings are found in the settings folder and are easy to edit.
-
 Current defaults:
+
 ![defaults](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss7.png)
+
+
+Toggling hiddens and builtins.
+
+![hiddens](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss3.png)
+
+![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss4.png)
 
 
 ## Contexts
@@ -80,7 +48,7 @@ On startup the context is set to the default global one where Node initializes i
 
 There are some things that are (currently) shared between contexts. Required modules, `process`, the various `ArrayBuffer` constructors, Node's `Buffer`, and the four timer functions, because currently Node doesn't provide a good way to make multiple copies. In the near future it will be changed, one way or another, so that nothing is required to be shared between contexts. Right now it's not required those items be copied, it's simply that if they are to be in multiple contexts then they are shared.
 
-Everything else is unique per context: native objects and any code you run yourself. It is generally possible to put objects on multiple contexts but there are some things that don't work, like trying to run Object.* functions from one context on objects in another one.
+Everything else is unique per context: native objects and any code you run yourself. It is generally possible to put objects on multiple contexts but there are some things that don't work, like trying to run Object.* functions from one context on objects in another one. The settings for depth, hiddens, builtins, and colors are also specific to each context.
 
 ![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss5.png)
 

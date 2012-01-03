@@ -9,6 +9,7 @@ var styling = function(){
       Null        : black2,
       // constructor functions
       Constructor : yellow2,
+      Proto       : red2,
       // normal types
       Function    : magenta2,
       Boolean     : yellow2,

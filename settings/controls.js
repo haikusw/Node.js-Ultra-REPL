@@ -27,6 +27,7 @@ module.exports = {
   'Clear Input/Screen': key('esc'),
   'Clear Screen'      : key('esc esc'),
   'Exit'              : key('esc esc esc'),
+  'Color Test'        : key('alt+1 alt+2'),
 
   'Save Session'      : dot('save'),
 };

@@ -49,10 +49,11 @@ var styling = function(){
       number: yellow1
     },
     info: {
-        page: bg_cyan2,
-        keydisplay: magenta2,
-        cadenceDone: red2,
-        cadenceLeft: red1
+      header: bg_cyan1,
+      page: [bg_cyan1, black1],
+      keydisplay: [bg_cyan1, yellow1],
+      cadenceDone: red2,
+      cadenceLeft: red1
     },
     context: {
       create: green1,

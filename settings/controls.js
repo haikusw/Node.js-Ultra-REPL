@@ -6,6 +6,7 @@ module.exports = {
   'Clear Screen'        : key('esc esc'),
   'Exit'                : key('esc esc esc'),
   'Inspect Context'     : ctrl('z'),
+  'Inject Node Builtins': alt('a'),
 
   'Toggle Hiddens'      : key('f2'),
   'Toggle Builtins'     : key('f3'),

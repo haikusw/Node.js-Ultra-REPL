@@ -5,6 +5,7 @@ module.exports = {
   'Clear Input/Screen'  : key('esc'),
   'Clear Screen'        : key('esc esc'),
   'Exit'                : key('esc esc esc'),
+  'Inspect Context'     : ctrl('z'),
 
   'Toggle Hiddens'      : key('f2'),
   'Toggle Builtins'     : key('f3'),

@@ -23,12 +23,18 @@ module.exports = {
 
   'Inject REPL'         : key('f11'),
   'Toggle Key Display'  : key('f12'),
-  'Require'             : dot('r'),
-  'Generate AST'        : dot('ast'),
+  'Require'             : dot('req'),
+  'Load REPL Module'    : dot('mod'),
 
   'Color Test'          : key('alt+1 alt+2'),
 
   //'Save Session'      : dot('save'),
+
+
+
+
+
+
 
   'Delete Right'        : key('del'),
   'Delete Left'         : key('bksp'),

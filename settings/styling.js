@@ -38,7 +38,7 @@ var styling = function(){
       keybind: yellow1,
       keyword: magenta1,
       command: green1,
-      keywords: black2
+      keywords: yellow2
     },
     intro: [ yellow2, red2 ],
     prompt: {
@@ -50,8 +50,8 @@ var styling = function(){
     },
     info: {
       header: bg_cyan1,
-      page: [bg_cyan1, black1],
-      keydisplay: [bg_cyan1, yellow1],
+      page: [bg_cyan1, white2],
+      keydisplay: [bg_cyan1, black1],
       cadenceDone: red2,
       cadenceLeft: red1
     },

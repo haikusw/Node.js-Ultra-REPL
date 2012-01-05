@@ -82,6 +82,8 @@ function UltraREPL(options){
           this.timedPrompt(evaled.result.name);
           finalize.errored = true;
         }
+        clearTimeout(finalize.syntax);
+        finalize.syntax = setTimeout(finalize.bind(this, evaled), 500);
         return this.updatePrompt();
       }
       finalize.call(this, evaled);
@@ -89,6 +91,7 @@ function UltraREPL(options){
 
     function finalize(evaled){
       finalize.errored = false;
+      clearTimeout(finalize.syntax);
       this.context._ = evaled.result;
       this.inspector();
       this.resetInput();
@@ -197,7 +200,7 @@ UltraREPL.prototype = {
   },
 
   refresh: function refresh(){
-    this.context._ = this.context.ctx;
+    //this.context._ = this.context.ctx;
     this.inspector();
     this.updatePrompt();
   },

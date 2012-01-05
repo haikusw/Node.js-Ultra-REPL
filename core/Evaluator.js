@@ -127,11 +127,12 @@ function parsify(src){
 function syntaxTry(src){
   var result;
   src = src || '';
+  src = src.replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
   if ((result = parsify(src)) === true) return src;
   src += ';';
-  if ((result = parsify(src)) === true) return src;
+  if (parsify(src) === true) return src;
   src = '( ' + src + '\n)';
-  if ((result = parsify(src)) === true) return src;
+  if (parsify(src) === true) return src;
   return result;
 }
 

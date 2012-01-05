@@ -130,7 +130,7 @@ Context.prototype = {
   clone: function clone(){
     var context = new Context;
     context.builtins = this.builtins;
-    context.hiddens  = this.hiddens;
+    context.hiddens = this.hiddens;
     context.colors = this.colors;
     context.depth = this.depth;
     this.scripts.forEach(function(script){ context.runScript(script) });

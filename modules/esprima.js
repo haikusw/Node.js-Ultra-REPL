@@ -1,9 +1,9 @@
 var esprima = require('esprima');
-var builtins = require('../../settings/builtins');
+var builtins = require('../settings/builtins');
 
 module.exports = [{
   name: 'Generate AST',
-  help: 'In progress. Use Esprima to generate AST for code to further debug and modift it.',
+  help: 'In progress. Use Esprima to generate AST for code to further debug and modify it.',
   defaultTrigger: { type: 'command', trigger: '.ast' },
 
   action: function(cmd, target){

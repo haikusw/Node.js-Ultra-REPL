@@ -5,8 +5,7 @@ module.exports = {
   'Clear Input/Screen'  : key('esc'),
   'Clear Screen'        : key('esc esc'),
   'Exit'                : key('esc esc esc'),
-  'Inspect Context'     : ctrl('z'),
-  'Inject Node Builtins': alt('a'),
+  'Inspect Context'     : key('ctrl+z'),
 
   'Toggle Hiddens'      : key('f2'),
   'Toggle Builtins'     : key('f3'),
@@ -15,13 +14,6 @@ module.exports = {
   'Inspect Depth--'     : key('f6'),
   'Set Inspect Depth'   : dot('depth'),
   'Toggle Colors'       : key('f10'),
-
-  'Create Context'      : ctrl_shift('up'),
-  'Delete Context'      : ctrl_shift('down'),
-  'Next Context'        : ctrl('up'),
-  'Previous Context'    : ctrl('down'),
-  'Reset Context'       : ctrl('r'),
-  'Label Context'       : dot('label'),
 
   'Inject REPL'         : key('f11'),
   'Toggle Key Display'  : key('f12'),
@@ -32,23 +24,17 @@ module.exports = {
 
   //'Save Session'      : dot('save'),
 
-
-
-
-
-
-
   'Delete Right'        : key('del'),
   'Delete Left'         : key('bksp'),
-  'Delete Word Right'   : ctrl('del'),
-  'Delete Word Left'    : ctrl('bksp'),
-  'Delete Line Right'   : ctrl_shift('del'),
-  'Delete Line Left'    : ctrl_shift('bksp'),
+  'Delete Word Right'   : key('ctrl+del'),
+  'Delete Word Left'    : key('ctrl+bksp'),
+  'Delete Line Right'   : key('ctrl+shift+del'),
+  'Delete Line Left'    : key('ctrl+shift+bksp'),
 
   'Move Left'           : key('left'),
   'Move Right'          : key('right'),
-  'Word Left'           : ctrl('left'),
-  'Word Right'          : ctrl('right'),
+  'Word Left'           : key('ctrl+left'),
+  'Word Right'          : key('ctrl+right'),
   'Line Left'           : key('home'),
   'Line Right'          : key('end'),
 
@@ -64,13 +50,6 @@ module.exports = {
 // ctrl = command on mac
 // alt = meta on linux
 
-function keyword         (x){ return { type: 'keyword', trigger: x } }
-function dot             (x){ return { type: 'command', trigger: '.' + x } }
-function key             (x){ return { type: 'keybind', trigger: x } }
-function ctrl            (x){ return key('ctrl+' + x) }
-function alt             (x){ return key('alt+' + x) }
-function shift           (x){ return key('shift+' + x) }
-function ctrl_alt        (x){ return ctrl('alt+' + x) }
-function ctrl_shift      (x){ return ctrl('shift+' + x) }
-function ctrl_alt_shift  (x){ return ctrl_alt('shift+' + x) }
-function alt_shift       (x){ return alt('shift+' + x) }
+function keyword(x){ return { type: 'keyword', trigger: x } }
+function dot(x){ return { type: 'command', trigger: '.' + x } }
+function key(x){ return { type: 'keybind', trigger: x } }

@@ -16,7 +16,6 @@ function Evaluator(){
   var self = this;
   Object.defineProperty(this.current, 'columns', { get: function(){ return self.columns } });
   this.tryContext = new Context;
-  this.tryContext.name = 'TryContext';
 }
 
 

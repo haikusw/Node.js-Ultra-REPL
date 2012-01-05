@@ -15,22 +15,18 @@ var contexts = new Map;
 
 module.exports = Context;
 
+var defaults = require('../settings/options').inspector;
+
 
 function Context(isGlobal){
-  this.isGlobal = !!isGlobal;
+  Object.defineProperty(this, 'name', function(name, color){
+    return {
+      get: function(){ return this.colors ? name.color(color) : name },
+      set: function(v){ name = v }
+    };
+  }(names.shift(), nameColors[nameIndex++ % nameColors.length]));
 
-  var name = isGlobal ? 'global' : names.shift();
-  var color = nameColors[nameIndex++];
-  nameIndex = nameIndex % nameColors.length;
-  Object.defineProperty(this, 'name', {
-    get: function(){ return this.colors ? name.color(color) : color }
-  });
-
-  this.builtins = true;
-  this.hiddens = false;
-  this.protos = true;
-  this.depth = 4;
-  this.colors = !process.env.NODE_DISABLE_COLORS;
+  Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
 
   this.scripts = [];
   this.history = [];

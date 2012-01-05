@@ -87,56 +87,7 @@ var commands = {
     }
   },
 
-  'Toggle Builtins': {
-    help: 'Toggle whether default built-in objects are shown.',
-    action: toggle('context', 'builtins')
-  },
-  'Toggle Hiddens': {
-    help: 'Toggle whether hidden properties are shown.',
-    action: toggle('context', 'hiddens')
-  },
-  'Toggle __proto__': {
-    help: 'Toggle whether [[prototype]] trees are displayed.',
-    action: toggle('context', 'protos')
-  },
-  'Toggle Colors': {
-    help: 'Toggle whether output is colored.',
-    action: toggle('context', 'colors')
-  },
 
-  'Set Inspect Depth': {
-    help: 'Set inspector recurse depth',
-    action: function(cmd, depth){
-      depth = parseInt(depth, 10);
-      if (depth === this.context.depth || !(depth > 0)) {
-        this.timedPrompt('depth ' + this.context.depth, style.prompt['--']);
-        return this.rli.clearInput();
-      }
-      depth = depth > 1 ? depth : 1;
-      this.timedPrompt('depth ' + depth, style.prompt[this.context.depth > depth ? '--' : '++']);
-      this.context.depth = depth;
-      this.refresh();
-    }
-  },
-
-  'Inspect Depth++': {
-    help: 'Increase inspector recurse depth',
-    action: function(){
-      this.context.depth++;
-      this.refresh();
-      this.timedPrompt('depth ' + this.context.depth, style.prompt['++']);
-    }
-  },
-  'Inspect Depth--': {
-    help: 'Decrease inspector recurse depth',
-    action: function(){
-      if (this.context.depth > 1) {
-        this.context.depth--;
-        this.refresh();
-        this.timedPrompt('depth ' + this.context.depth, style.prompt['--']);
-      }
-    }
-  },
 
   'Clear Input/Screen': {
     help: 'Clear the the input line if it has text or clears the screen if not.',
@@ -281,7 +232,7 @@ module.exports = function(target){
 
   initializeControls(commands, controls);
 
-  require('../settings/modules').autoload.forEach(loadModule);
+  require('../settings/options').autoload.forEach(loadModule);
 
   function initializeControls(commands, controls){
     Object.keys(commands).forEach(function(name){

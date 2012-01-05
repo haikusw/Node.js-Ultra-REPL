@@ -3,26 +3,32 @@ var fs = require('fs');
 var child_process = require('child_process');
 
 
-var props = module.exports.properties = [
-                'target', 'cwd', 'style', 'args',
-                'icon', 'description', 'hotkey' ];
+var props = module.exports.properties =
+[ 'target', 'cwd', 'style', 'args',
+  'icon', 'description', 'hotkey' ];
 
-var styles = module.exports.styles = [
-               'Hidden', 'Normal', 'Minimized', 'Maximized',
-               'Normal unfocused', 'Minimized unfocused' ];
+var styles = module.exports.styles =
+[ 'Hidden', 'Normal', 'Minimized', 'Maximized',
+  'Normal unfocused', 'Minimized unfocused' ];
 
-var special = module.exports.specialFolders = [
-                'AllUsersDesktop', 'AllUsersStartMenu', 'AllUsersPrograms', 'AllUsersStartup',
-                'Desktop', 'Favorites', 'Fonts', 'MyDocuments', 'NetHood', 'PrintHood',
-                'Programs', 'Recent','SendTo', 'StartMenu', 'Startup', 'Templates' ];
+var special = module.exports.specialFolders =
+[ 'AllUsersDesktop', 'AllUsersStartMenu', 'AllUsersPrograms', 'AllUsersStartup',
+  'Desktop', 'Favorites', 'Fonts', 'MyDocuments', 'NetHood', 'PrintHood',
+  'Programs', 'Recent','SendTo', 'StartMenu', 'Startup', 'Templates' ];
 
 
 module.exports.createShortcut = function createShortcut(options){ return new Shortcut(options) }
 
+var wmi = WScript.CreateObject("winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\cimv2")
+var startup = wmi.Get("Win32_ProcessStartup")
+var config = startup.SpawnInstance_
+config.ShowWindow = 0
+var process = WScript.CreateObject("winmgmts:root\\cimv2:Win32_Process")
+err = process.Create("Notepad.exe", null, config, intProcessID)
 
 function Shortcut(options){
-  Object.keys(Shortcut.prototype).forEach(function(k){
-    if (k in options) this[k] = options[k];
+  Object.keys(options).forEach(function(k){
+    this[k] = options[k];
   }, this);
 }
 
@@ -34,9 +40,7 @@ Shortcut.prototype = {
 
   create: function(callback){
     var script = './' + Date.now() + '.js';
-
     fs.writeFileSync(script, this.toString());
-
     child_process.exec('cscript //NoLogo ' + script, function(err, out){
       fs.unlink(script);
       callback(err, out);
@@ -46,10 +50,11 @@ Shortcut.prototype = {
   toString: function(){
     var properties = props.map(function(p){
       if (typeof this[p] === 'undefined') return '';
-      return 's.'+propMap[p]+' = '+this.format(p, this[p])+';\n';
-    }, this).join('')
+      return 's.'+propMap[p]+' = '+this.format(p)+';\n';
+    }, this).join('');
+
     return [ 'var ws = WScript.CreateObject("WScript.Shell");',
-             'var s = ws.CreateShortcut(' + this.format('location') + ' + "\\\\' + this.format('linkname')+'");',
+             'var s = ws.CreateShortcut(' + this.format('location') + ' + "\\\\' + this.format('title')+'");',
               properties,
              's.Save(); WScript.Echo(s);' ].join('\n');
   },
@@ -100,7 +105,7 @@ var formatters = {
     var index = styles.indexOf(this.style);
     return ~index ? index : 1;
   },
-  linkname: function(v){
+  title: function(v){
     return path.basename((v || this.target).slice(0, this.target.indexOf('.') + 1) + 'lnk');
   },
   cwd: function(v){

@@ -7,13 +7,6 @@ module.exports = {
   'Exit'                : key('esc esc esc'),
   'Inspect Context'     : key('ctrl+z'),
 
-  'Toggle Hiddens'      : key('f2'),
-  'Toggle Builtins'     : key('f3'),
-  'Toggle __proto__'    : key('f4'),
-  'Inspect Depth++'     : key('f5'),
-  'Inspect Depth--'     : key('f6'),
-  'Set Inspect Depth'   : dot('depth'),
-  'Toggle Colors'       : key('f10'),
 
   'Require'             : dot('req'),
   'Load REPL Module'    : dot('mod'),
@@ -37,6 +30,15 @@ module.exports = {
 
   'Line'                : key('enter'),
   //'Tab Complete'        : key('tab'),
+
+  // Toggles
+  'Toggle Hiddens'      : key('f2'),
+  'Toggle Builtins'     : key('f3'),
+  'Toggle __proto__'    : key('f4'),
+  'Inspect Depth--'     : key('f5'),
+  'Inspect Depth++'     : key('f6'),
+  'Toggle Colors'       : key('f9'),
+  'Set Inspect Depth'   : dot('depth'),
 
   // Context Controls
   'Inject Node Builtins': key('alt+a'),

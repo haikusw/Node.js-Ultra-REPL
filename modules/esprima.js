@@ -1,5 +1,5 @@
 var esprima = require('esprima');
-var builtins = require('../settings/builtins');
+var builtins = require('../lib/builtins');
 
 module.exports = [{
   name: 'Generate AST',

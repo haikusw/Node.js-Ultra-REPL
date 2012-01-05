@@ -6,7 +6,7 @@ var Dict = require('../lib/Dict');
 
 var controls = require('../settings/controls');
 var style = require('../settings/styling');
-var builtins = require('../settings/builtins');
+var builtins = require('../lib/builtins');
 
 
 // TODO turn this whole thing in a class with some structure

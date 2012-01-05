@@ -1,10 +1,10 @@
-var nodeBuiltins = require('../settings/builtins').node;
+var builtins = require('../lib/builtins');
 var isError = require('../lib/object-utils').is('Error');
 var style = require('../settings/styling');
 
 function injectNodeBuiltins(){
   this.context.ctx.global = this.context.ctx;
-  nodeBuiltins.forEach(function(name){
+  builtins.node.forEach(function(name){
     Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
   }, this);
   this.refresh();

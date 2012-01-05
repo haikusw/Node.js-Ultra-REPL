@@ -2,13 +2,14 @@ var vm = require('vm');
 var path = require('path');
 var fs = require('fs');
 
-var loadScript = require('context-loader').loadScript;
-var wrapCode = require('context-loader').wrap;
+var loader = require('context-loader');
 
-var settings = require('../settings');
-var nameColors = settings.styling.context.names;
+var builtins = require('../lib/builtins');
+var names = require('../settings/text').names;
+var style = require('../settings/styling');
+var nameColors = style.context.names;
 var nameIndex = 1;
-var inspector = loadScript(path.resolve(__dirname, 'inspect.js'));
+var inspector = loader.loadScript(path.resolve(__dirname, 'inspect.js'));
 var contexts = new Map;
 
 
@@ -18,7 +19,7 @@ module.exports = Context;
 function Context(isGlobal){
   this.isGlobal = !!isGlobal;
 
-  var name = isGlobal ? 'global' : settings.text.names.shift();
+  var name = isGlobal ? 'global' : names.shift();
   var color = nameColors[nameIndex++];
   nameIndex = nameIndex % nameColors.length;
   Object.defineProperty(this, 'name', {
@@ -108,7 +109,7 @@ Context.prototype = {
 
   runCode: function runCode(code, filename){
     try {
-      var script = wrapCode(code, filename);
+      var script = loader.wrap(code, filename);
     } catch (e) {
       var script = new NotCompiledScript(code, filename);
     }
@@ -118,7 +119,7 @@ Context.prototype = {
   },
 
   runFile: function runFile(filename){
-    var script = loadScript(filename);
+    var script = loader.loadScript(filename);
     if (script) {
       return this.runScript(script);
     }
@@ -160,14 +161,14 @@ Context.prototype = {
 
     function filtered(obj){
       format = output;
-      return filter(thisGlobal, settings.builtins.all);
+      return filter(thisGlobal, builtins.all);
     }
 
     function snapshot(){
       format = output;
       globals = globals || [];
       return globals = O('getOwnPropertyNames', thisGlobal).filter(function(n){
-        return !~globals.indexOf(n) && !~settings.builtins.all.indexOf(n);
+        return !~globals.indexOf(n) && !~builtins.all.indexOf(n);
       });
     }
 
@@ -186,15 +187,15 @@ Context.prototype = {
       var output = [];
 
       if (!this.builtins && obj === thisGlobal) {
-        obj = filter(obj, settings.builtins.all);
+        obj = filter(obj, builtins.all);
       }
 
       if (typeof obj !== 'undefined') {
-        output.push(inspect(obj, this, settings.styling.inspector));
+        output.push(inspect(obj, this, style.inspector));
       }
 
       if (typeof last.globals !== 'undefined') {
-        output.push(inspect(last.globals, this, settings.styling.inspector));
+        output.push(inspect(last.globals, this, style.inspector));
       }
 
       return output.join('\n');

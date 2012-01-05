@@ -18,7 +18,7 @@ var fixEmitKey = require('../lib/fixEmitKey');
 var commands = require('./commands');
 
 var style = require('../settings/styling');
-var builtins = require('../settings/builtins');
+var builtins = require('../lib/builtins');
 
 var widest = require('../lib/string-utils').widest;
 var chunk = require('../lib/string-utils').chunk;

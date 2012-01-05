@@ -36,7 +36,6 @@ function UltraREPL(options){
   this.appPrompt = options.prompt || 'js';
   this.buffered = [];
   this.lines = [];
-  this.help = [];
   this.lines.level = [];
   this.keydisplay = false;
 
@@ -52,22 +51,24 @@ function UltraREPL(options){
     stream = { input: process.stdin, output: process.stdout };
   }
 
-  this.input = stream.input;
-  this.output = stream.output;
-
-  fixEmitKey(this.input);
-
+  fixEmitKey(stream.input);
 
   var complete = this.complete.bind(this);
-  var rli = this.rli = new UltraRLI(stream, complete);
+  var rli = new UltraRLI(stream, complete);
+
+  Object.defineProperties(this, {
+    help: hidden([]),
+    input: hidden(stream.input),
+    output: hidden(stream.output),
+    rli: hidden(rli),
+    timer: hidden(0)
+  });
 
   rli.on('close', stream.input.destroy.bind(stream.input));
   rli.on('resize', this.refresh.bind(this));
   rli.on('line', function(cmd){
     cmd = cmd.trim();
-    if (!cmd) return;
-
-    if (this.keyword(cmd) !== false) return;
+    if (!cmd || this.keyword(cmd) !== false) return;
 
     this.buffered.push(cmd);
     this.rli.clearInput();
@@ -269,3 +270,5 @@ function generateHelp(help, screenW){
 
   });
 }
+
+function hidden(v){ return { value: v, configurable: true, writable: true, enumerable: false } };

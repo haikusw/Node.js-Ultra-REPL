@@ -15,14 +15,8 @@ module.exports = {
   'Set Inspect Depth'   : dot('depth'),
   'Toggle Colors'       : key('f10'),
 
-  'Inject REPL'         : key('f11'),
-  'Toggle Key Display'  : key('f12'),
   'Require'             : dot('req'),
   'Load REPL Module'    : dot('mod'),
-
-  'Color Test'          : key('alt+1 alt+2'),
-
-  //'Save Session'      : dot('save'),
 
   'Delete Right'        : key('del'),
   'Delete Left'         : key('bksp'),
@@ -43,12 +37,21 @@ module.exports = {
 
   'Line'                : key('enter'),
   //'Tab Complete'        : key('tab'),
+
+  // Context Controls
+  'Inject Node Builtins': key('alt+a'),
+  'Create Context'      : key('ctrl+shift+up'),
+  'Delete Context'      : key('ctrl+shift+down'),
+  'Reset Context'       : dot('reset'),
+  'Next Context'        : key('ctrl+up'),
+  'Previous Context'    : key('ctrl+down'),
+  'Label Context'       : dot('label'),
+
+  // REPL Development
+  'Inject REPL'         : key('f12'),
+  'Toggle Key Display'  : key('f11'),
+  'Color Test'          : key('f10'),
 };
-
-
-
-// ctrl = command on mac
-// alt = meta on linux
 
 function keyword(x){ return { type: 'keyword', trigger: x } }
 function dot(x){ return { type: 'command', trigger: '.' + x } }

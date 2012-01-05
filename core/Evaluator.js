@@ -2,7 +2,7 @@ var util = require('util');
 var path = require('path');
 var EventEmitter = require('events').EventEmitter;
 
-var Iterable = require('./Iterable').Iterable;
+var Iterable = require('../lib/Iterable').Iterable;
 var Context = require('./Context');
 
 module.exports = Evaluator;

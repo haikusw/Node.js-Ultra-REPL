@@ -4,7 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var tty = require('tty');
 
 
-require('./string-utils').attachTo(String.prototype);
+require('../lib/string-utils').attachTo(String.prototype);
 
 module.exports = UltraRLI;
 

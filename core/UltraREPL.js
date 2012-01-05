@@ -7,21 +7,21 @@ var repl = require('repl');
 var fs = require('fs');
 var REPLServer = repl.REPLServer;
 
-require('./string-utils').attachTo(String.prototype);
-var Dict = require('./Dict');
-var Results = require('./Results');
+require('../lib/string-utils').attachTo(String.prototype);
+var Dict = require('../lib/Dict');
+var Results = require('../lib/PageSet');
 var UltraRLI = require('./UltraRLI');
 var Evaluator = require('./Evaluator');
 
-var fixEmitKey = require('./fixEmitKey');
+var fixEmitKey = require('../lib/fixEmitKey');
 
 var commands = require('./commands');
 
 var style = require('../settings/styling');
 var builtins = require('../settings/builtins');
 
-var widest = require('./string-utils').widest;
-var chunk = require('./string-utils').chunk;
+var widest = require('../lib/string-utils').widest;
+var chunk = require('../lib/string-utils').chunk;
 
 
 

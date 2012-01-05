@@ -26,54 +26,56 @@ function contexCommand(action){
   }
 }
 
-function keyword(x){ return { type: 'keyword', trigger: x } }
-function dot(x){ return { type: 'command', trigger: '.' + x } }
-function key(x){ return { type: 'keybind', trigger: x } }
 
 module.exports = [
   { name: 'Inject Node Builtins',
-    defaultTrigger: key('alt+a'),
     help: 'Add the default Node global variables to the current context. This includes process, console, '+
           'Buffer, and the various ArrayBuffer functions.',
+    defaultTrigger: key('alt+a'),
     action: injectNodeBuiltins
   },
   { name: 'Create Context',
-    defaultTrigger: key('ctrl+shift+up'),
     help: 'Create, initialize, and switch into a new V8 context.',
+    defaultTrigger: key('ctrl+shift+up'),
     action: contexCommand('create')
   },
   { name: 'Delete Context',
-    defaultTrigger: key('ctrl+shift+down'),
     help: 'Delete the current V8 context and all objects unreferences externally.',
+    defaultTrigger: key('ctrl+shift+down'),
     action: contexCommand('remove')
   },
   { name: 'Reset Context',
-    defaultTrigger: dot('r'),
     help: 'Reset current context.',
+    defaultTrigger: dot('r'),
     action: contexCommand( 'reset')
   },
   { name: 'Next Context',
-    defaultTrigger: key('ctrl+up'),
     help: 'Switch to the previous next.',
+    defaultTrigger: key('ctrl+up'),
     action: function(){
       this.context.change(1);
       this.updatePrompt();
     }
   },
   { name: 'Previous Context',
-    defaultTrigger: key('ctrl+down'),
     help: 'Switch to the previous context.',
+    defaultTrigger: key('ctrl+down'),
     action: function(){
       this.context.change(-1);
       this.updatePrompt();
     }
   },
   { name: 'Label Context',
-    defaultTrigger: dot('label'),
     help: 'Change the label of the current context.\n',
+    defaultTrigger: dot('label'),
     action: function(cmd, name){
       this.context.name = name;
       this.updatePrompt();
     }
   }
 ]
+
+
+function keyword(x){ return { type: 'keyword', trigger: x } }
+function dot(x){ return { type: 'command', trigger: '.' + x } }
+function key(x){ return { type: 'keybind', trigger: x } }

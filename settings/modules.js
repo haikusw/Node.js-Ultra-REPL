@@ -1,3 +1,4 @@
-module.exports = [
-	'contexts'
+module.exports.autoload = [
+	'contexts',
+	'repldev'
 ]

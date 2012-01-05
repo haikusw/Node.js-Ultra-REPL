@@ -2,7 +2,7 @@ var util = require('util');
 var fs = require('fs');
 var path = require('path');
 
-var Dict = require('./Dict');
+var Dict = require('../lib/Dict');
 
 var controls = require('../settings/controls');
 var style = require('../settings/styling');
@@ -62,13 +62,6 @@ var commands = {
     }
   },
 
-  'Inject REPL': {
-    help: 'Adds a reference to the live repl object to the current context.\n',
-    action: function(){
-      return this.context.ctx.repl = this;
-    }
-  },
-
   'Inspect Context': {
     help: 'Shortcut for writing `this` to inspect the current context.',
     action: function(){
@@ -91,23 +84,6 @@ var commands = {
       if (this.pages.count() === 0)  return;
       this.rli.writePage(this.pages.previous());
       this.header();
-    }
-  },
-
-
-  'Color Test': {
-    help: 'Test ANSI colors',
-    action: function(){
-      var names = String.prototype.color.names;
-      var width = names.join('').length / 2;
-      var left = (this.width - width) / 2;
-      var top = this.height / 2 - 2;
-      this.output.cursorTo(left, top);
-      var names = [names.slice(0, names.length / 2), names.slice(names.length / 2 + 1)];
-      names[0].forEach(function(color){ this.output.write(color.color(color) + ' ') }, this);
-      this.output.cursorTo(left, top + 2);
-      names[1].forEach(function(color){ this.output.write(color.slice(2).color(color) + ' ') }, this);
-      this.rli.home();
     }
   },
 
@@ -162,12 +138,6 @@ var commands = {
     }
   },
 
-  'Toggle Key Display': {
-    help: 'Toggle displaying what keys are pressed for checking keybindings.\n',
-    action: toggle('keydisplay')
-  },
-
-
   'Clear Input/Screen': {
     help: 'Clear the the input line if it has text or clears the screen if not.',
     action: function(){
@@ -178,20 +148,6 @@ var commands = {
   'Exit': {
     help: 'Exit the REPL.\n',
     action: function(){ this.rli.close() } },
-
-  // 'Save Session': {
-  //   help:        'Save all evaluated commands in this REPL session to a file.',
-  //   action: function(file) {
-  //    try {
-  //      fs.writeFileSync(file, this.lines.join('\n'));
-  //      this.write('Session saved to:' + file + '\n');
-  //    } catch (e) {
-  //      this.write('Failed to save:' + file)
-  //    }
-  //    this.displayPrompt();
-  //   }
-  // },
-
 
   'Delete Left'       : { action: function(){ this.rli._deleteLeft()      } },
   'Delete Right'      : { action: function(){ this.rli._deleteRight()     } },
@@ -298,26 +254,23 @@ module.exports = function(target){
   };
 
 
-  function loadModule(name){
-    var commands = {}, controls = {};
+  var loadModule = target.loadModule = function loadModule(name){
+    var commands = {};
     var mod = require(path.resolve(__dirname, '../modules', name));
 
     var help = mod.map(function(command){
       commands[command.name] = command;
 
-      if (command.defaultTrigger) {
+      if (command.defaultTrigger && !(command.name in controls)) {
          controls[command.name] = command.defaultTrigger
       };
 
       if (!command.help) return '';
 
-      var info = {
-        name: command.name,
-        help: command.help,
-      };
-      if (command.defaultTrigger) {
-        info.type = command.defaultTrigger.type;
-        info.trigger =  command.defaultTrigger.trigger;
+      var info = { name: command.name, help: command.help };
+      if (controls[command.name]) {
+        info.type = controls[command.name].type;
+        info.trigger =  controls[command.name].trigger;
       }
       return info;
     });
@@ -326,13 +279,9 @@ module.exports = function(target){
     return help;
   };
 
-  target.loadModule = loadModule;
-
-
   initializeControls(commands, controls);
 
-
-  require('../settings/modules').forEach(loadModule);
+  require('../settings/modules').autoload.forEach(loadModule);
 
   function initializeControls(commands, controls){
     Object.keys(commands).forEach(function(name){

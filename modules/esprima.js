@@ -3,49 +3,31 @@ var builtins = require('../settings/builtins');
 
 module.exports = [{
   name: 'Generate AST',
-  help: 'In progress. Use Esprima to generate AST for code to further debug and modify it.',
+  help: 'Use Esprima to generate AST for code to further debug and modify it.',
   defaultTrigger: { type: 'command', trigger: '.ast' },
 
   action: function(cmd, target){
     // search executed code history first
-    var source = this.context.current.scripts.reduce(function(r, t){
-      if (~t.globals.indexOf(target)) {
-        r.push(t.code);
-      }
-      return r;
+    var source = this.context.current.scripts.filter(function(rt){
+      return ~t.globals.indexOf(target);
     }, []);
 
     if (source.length){
-
-      // found matching executed code in this context
-      source = source.join('\n\n');
-
+      source = source.map(function(s){ return s.code }).join('\n\n');  // found matching executed code in this context
     } else if (target in this.context.ctx && typeof this.context.ctx[target] === 'function') {
-
-      // search for matching functions and grab their source
-      source = this.context.ctx[target] + '';
-
+      source = this.context.ctx[target] + '';                          // search for matching functions and grab their source
     } else if (~builtins.libs.indexOf(target)) {
-
-      // search for builtin Node libs
-      source = process.binding('natives')[target];
-
+      source = process.binding('natives')[target];                     // search for builtin Node libs
     } else if (path.existsSync(target)) {
-
-      // search for js files
-      source = fs.readFileSync(target, 'utf-8');
-
+      source = fs.readFileSync(target, 'utf-8');                       // search for js files
     } else if (typeof target === 'string') {
-
-      // hope that the code itself was passed
-      source = target;
-
+      source = target;                                                 // hope that the code itself was passed
     } else {
       this.context._ = new Error('Unable to Find a Match');
-      return this.inspector(this.context._);
+      return this.inspector();
     }
 
     this.context._ = this.context.ctx.ast = esprima.parse(source).body;
-    this.inspector(this.context._);
+    this.inspector();
   }
 }];

@@ -30,10 +30,6 @@ function Context(isGlobal){
 
   Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
 
-  this.scripts = [];
-  this.history = [];
-  this.errors = [];
-
   if (isGlobal) {
     if (module.globalConfigured) return global;
     module.globalConfigured = true;
@@ -46,6 +42,9 @@ function Context(isGlobal){
       exports:  { get: function( ){ return module.exports; },
                   set: function(v){ module.exports = v;    } }
     });
+    this.scripts = [];
+    this.history = [];
+    this.errors = [];
     this.createInspector();
   } else {
     this.initialize();
@@ -87,6 +86,9 @@ Context.prototype = {
     // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
     'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
     this.createInspector();
+    this.scripts = [];
+    this.history = [];
+    this.errors = [];
     return this;
   },
 
@@ -99,6 +101,20 @@ Context.prototype = {
 
   globals: function globals(){
     return run('Object.getOwnPropertyNames(this)', this.ctx);
+  },
+
+  syntaxCheck: function syntaxCheck(code){
+    function parsify(src){
+      try { return Function(src), true; }
+      catch (e) { return e }
+    }
+    src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
+    if ((result = parsify(src)) === true) return src;
+    src += ';';
+    if (parsify(src) === true) return src;
+    src = '( ' + src + '\n)';
+    if (parsify(src) === true) return src;
+    return result;
   },
 
   runScript: function runScript(script){

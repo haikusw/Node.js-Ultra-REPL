@@ -43,13 +43,16 @@ Evaluator.prototype = {
   set name(v){     this.current.name = v     },
   set _(v){        this.current.ctx._ = v    },
 
-  create: function create(){
-    var context = new Context;
+  add: function add(context){
     this.contexts.add(context.name, context);
     var self = this;
     Object.defineProperty(context, 'columns', { get: function(){ return self.columns } });
     this.iterator.current = this.contexts.count() - 1;
     return this.current = context;
+  },
+
+  create: function create(){
+    return this.add(new Context);
   },
 
   change: function change(to){
@@ -86,58 +89,23 @@ Evaluator.prototype = {
   evaluate: function evaluate(code){
     var output = {
       status: 'success',
-      code: code.trim()
+      code: code.trim(),
+      result: this.current.syntaxCheck(code)
     };
-    output.result = syntaxTry(code);
+
     if (output.result.name === 'SyntaxError') {
       output.status = 'syntax_error';
     } else {
       output.code = output.result;
       try {
-        output.result = this.tryContext.runCode(output.code);
+        output.result = this.current.runCode(output.code);
+        output.status = 'success';
       } catch (e) {
         output.result = e;
-        output.status = e.name === 'SyntaxError' ? 'syntax_error' : 'error';
-      }
-      if (output.status !== 'syntax_error') {
-        try {
-          output.result = this.current.runCode(output.code);
-          output.status = 'success';
-        } catch (e) {
-          output.result = e;
-          output.status = 'error';
-        }
+        output.status = 'error';
       }
     }
     this.current.history.push(output);
     return output;
   }
-};
-
-
-function parsify(src){
-  try {
-    Function(src);
-    return true;
-  } catch (e) {
-    return e;
-  }
-}
-
-function syntaxTry(src){
-  var result;
-  src = src || '';
-  src = src.replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
-  if ((result = parsify(src)) === true) return src;
-  src += ';';
-  if (parsify(src) === true) return src;
-  src = '( ' + src + '\n)';
-  if (parsify(src) === true) return src;
-  return result;
-}
-
-function scoped(cmd) {
-  cmd.replace(/^\s*function\s*([_\w\$]+)/g, '$1 = function $1' + cmd)
-  cmd.replace(/^\s*var\s*([_\w\$]+)(.*)$/g, 'global.$1$2');
-  return cmd;
 };

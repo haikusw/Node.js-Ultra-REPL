@@ -172,7 +172,9 @@ UltraREPL.prototype = {
   },
 
   showHelp: function showHelp(info){
-    this.rli.writeFrom(this.generateHelp(info || this.help, this.width), 0, 1);
+    this.rli.clearScreen();
+    this.header();
+    this.rli.writeFrom(this.generateHelp(info || this.help, this.width));
     this.resetInput();
   },
 

@@ -155,9 +155,9 @@ UltraRLI.prototype = {
     left = left || 0;
     this.output.cursorTo(left, top + 1);
     for (var i = 0, len = output.length; i + top < this.height - 1 && i < output.length; i++) {
-      this.output.cursorTo(left, i + top);
-      this.output.write(output[i]);
-      this.output.clearLine(1);
+      this.output.moveCursor(0, 1);
+      this.output.write(output[i] );
+      this.output.cursorTo(left);
     }
     this.home();
   },

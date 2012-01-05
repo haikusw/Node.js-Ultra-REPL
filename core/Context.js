@@ -103,7 +103,7 @@ Context.prototype = {
     return run('Object.getOwnPropertyNames(this)', this.ctx);
   },
 
-  syntaxCheck: function syntaxCheck(code){
+  syntaxCheck: function syntaxCheck(src){
     function parsify(src){
       try { return Function(src), true; }
       catch (e) { return e }

@@ -12,9 +12,9 @@ var CoffeeContext = heritable({
   //runCode: function runCode(code, filename){
   //  return Context.prototype.runCode.call(this, coffee.compile(code), filename);
   //},
-  syntaxCheck: function syntaxCheck(code){
+  syntaxCheck: function syntaxCheck(src){
     try {
-      return coffee.compile(code, { bare: true });
+      return coffee.compile(src, { bare: true });
     } catch (e) {
       return e;
     }
@@ -23,7 +23,7 @@ var CoffeeContext = heritable({
 
 module.exports = [{
   name: 'Create Coffee Context',
-  help: 'Create a new context that evaluates CoffeeScript commands',
+  help: 'Create a new context that evaluates input as CoffeeScript',
   defaultTrigger: key('alt+c'),
   action: function(){
     var result = this.context.add(new CoffeeContext);

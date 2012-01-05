@@ -19,12 +19,6 @@ var special = module.exports.specialFolders =
 
 module.exports.createShortcut = function createShortcut(options){ return new Shortcut(options) }
 
-var wmi = WScript.CreateObject("winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\cimv2")
-var startup = wmi.Get("Win32_ProcessStartup")
-var config = startup.SpawnInstance_
-config.ShowWindow = 0
-var process = WScript.CreateObject("winmgmts:root\\cimv2:Win32_Process")
-err = process.Create("Notepad.exe", null, config, intProcessID)
 
 function Shortcut(options){
   Object.keys(options).forEach(function(k){

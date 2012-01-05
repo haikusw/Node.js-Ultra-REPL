@@ -3,11 +3,11 @@ var isError = require('../lib/object-utils').is('Error');
 var style = require('../settings/styling');
 
 function injectNodeBuiltins(){
+  this.context.ctx.global = this.context.ctx;
   nodeBuiltins.forEach(function(name){
     Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
   }, this);
-  this.context._ = this.context.ctx;
-  this.inspector();
+  this.refresh();
 }
 
 
@@ -19,10 +19,9 @@ function contexCommand(action){
     } else {
       result = action.color(style.context[action]) + ' ' + result.name;
     }
-    this.context._ = this.context.ctx;
-    this.inspector();
     this.rli.timedWrite('topright', result, 'bgbblack');
     this.updatePrompt();
+    this.refresh();
   }
 }
 
@@ -54,7 +53,7 @@ module.exports = [
     defaultTrigger: key('ctrl+up'),
     action: function(){
       this.context.change(1);
-      this.updatePrompt();
+      this.refresh();
     }
   },
   { name: 'Previous Context',
@@ -62,7 +61,7 @@ module.exports = [
     defaultTrigger: key('ctrl+down'),
     action: function(){
       this.context.change(-1);
-      this.updatePrompt();
+      this.refresh();
     }
   },
   { name: 'Label Context',

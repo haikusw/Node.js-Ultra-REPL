@@ -197,6 +197,7 @@ UltraREPL.prototype = {
   },
 
   refresh: function refresh(){
+    this.context._ = this.context.ctx;
     this.inspector();
   },
 

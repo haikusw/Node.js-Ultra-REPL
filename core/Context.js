@@ -77,20 +77,25 @@ function NotCompiledScript(code, name){
 
 Context.prototype = {
   constructor: Context,
+
+  get ctx(){ return contexts.get(this) },
+  set ctx(v){ contexts.set(this, v) },
+
   initialize: function initialize(){
     this.ctx = vm.createContext();
-    run('global = this', this.ctx);
+    // initialize context
+    run('this', this.ctx);
+    // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
+    'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
     this.createInspector();
     return this;
   },
-  get ctx(){ return contexts.get(this) },
-  set ctx(v){ contexts.set(this, v) },
 
   createInspector: function createInspector(){
     var uuid = UUID();
     this.outputHandler(uuid);
     run('_ = "' + uuid + '"', this.ctx);
-    inspector.runInContext(this.ctx)
+    inspector.runInContext(this.ctx);
   },
 
   runScript: function runScript(script){

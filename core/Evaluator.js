@@ -15,7 +15,6 @@ function Evaluator(){
   this.contexts.add('global', this.current);
   var self = this;
   Object.defineProperty(this.current, 'columns', { get: function(){ return self.columns } });
-  this.tryContext = new Context;
 }
 
 
@@ -105,7 +104,6 @@ Evaluator.prototype = {
         output.status = 'error';
       }
     }
-    this.current.history.push(output);
     return output;
   }
 };

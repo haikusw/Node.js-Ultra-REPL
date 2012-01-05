@@ -13,22 +13,17 @@ var style = require('../settings/styling');
 var nameColors = style.context.names;
 var nameIndex = 1;
 var inspector = loader.loadScript(path.resolve(__dirname, 'inspect.js'));
+
 var contexts = new WeakMap;
+var scripts = new WeakMap;
 
 module.exports = Context;
 
-
-
 function Context(isGlobal){
-  Object.defineProperty(this, 'name', function(color){
-    var name = names.shift();
-    return {
-      get: function(){ return this.colors ? name.color(color) : name },
-      set: function(v){ name = v }
-    };
-  }(nameColors[nameIndex++ % nameColors.length]));
 
   Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
+
+  this.name = names.shift().color(nameColors[nameIndex++ % nameColors.length]);
 
   if (isGlobal) {
     if (module.globalConfigured) return global;
@@ -42,35 +37,13 @@ function Context(isGlobal){
       exports:  { get: function( ){ return module.exports; },
                   set: function(v){ module.exports = v;    } }
     });
-    this.scripts = [];
+
+    scripts.set(this, []);
     this.history = [];
-    this.errors = [];
     this.createInspector();
   } else {
     this.initialize();
   }
-}
-
-function run(code, ctx, name){
-  if (ctx === global) {
-    return vm.runInThisContext(code, name || 'global');
-  } else {
-    return vm.runInContext(code, ctx, name);
-  }
-}
-
-
-function NotCompiledScript(code, name){
-  var props = {
-    code: { value: code, enumerable: true },
-    runInContext: {
-      value: function runInContext(context){
-        return vm.runInContext(code, context, name);
-      }
-    }
-  };
-  if (name) props.name = { value: name, enumerable: true, writable: true };
-  Object.defineProperties(this, props);
 }
 
 Context.prototype = {
@@ -80,15 +53,16 @@ Context.prototype = {
   set ctx(v){ contexts.set(this, v) },
 
   initialize: function initialize(){
-    this.ctx = vm.createContext();
     // initialize context
+    this.ctx = vm.createContext();
     run('this', this.ctx);
+
     // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
     'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
+
     this.createInspector();
-    this.scripts = [];
+    scripts.set(this, []);
     this.history = [];
-    this.errors = [];
     return this;
   },
 
@@ -104,10 +78,6 @@ Context.prototype = {
   },
 
   syntaxCheck: function syntaxCheck(src){
-    function parsify(src){
-      try { return Function(src), true; }
-      catch (e) { return e }
-    }
     src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
     if ((result = parsify(src)) === true) return src;
     src += ';';
@@ -118,7 +88,7 @@ Context.prototype = {
   },
 
   runScript: function runScript(script){
-    this.scripts.push(script);
+    scripts.get(this).push(script);
     var globals = this.globals();
     var result = script.runInContext(this.ctx).result;
     script.globals = this.globals().filter(function(s){ return !~globals.indexOf(s) });
@@ -128,6 +98,14 @@ Context.prototype = {
       if (ctx[s] === result) result = r;
       return r;
     }, run('({})', this.ctx));
+    if (typeof result === 'undefined' && script.globals.length) {
+      result = globals;
+    }
+    this.history.push({
+      code: script.code,
+      result: result,//get result(){  return result },
+      globals: globals//get globals(){ return result }
+    });
     return result;
   },
 
@@ -154,7 +132,7 @@ Context.prototype = {
   },
 
   outputHandler: function outputHandler(id){
-    var last, filter, inspect;
+    var last, inspect, filter;
     var handler = save;
     var ctx = this.ctx;
     var thisGlobal = global === this.ctx ? global : vm.runInContext('this', this.ctx);
@@ -170,16 +148,11 @@ Context.prototype = {
       handler = save;
     }
 
-    function filtered(obj){
-      format = output;
-      return filter(thisGlobal, builtins.all);
-    }
-
     function save(obj){
       last = obj;
     }
 
-    var output = function output(){
+    var format = function(){
       if (typeof last === 'undefined') return '';
 
       var obj = last;
@@ -191,13 +164,10 @@ Context.prototype = {
       return inspect(obj, this, style.inspector);
     }.bind(this);
 
-    var format = output;
-
     Object.defineProperty(this.ctx, '_', {
-      get: function( ){ return format(last) },
+      get: function( ){ return format() },
       set: function(v){
         if (v === id) return handler = install;
-        if (v === 'filter') return format = filtered;
         handler(v);
       }
     });
@@ -208,4 +178,18 @@ Context.prototype = {
 function UUID(seed){
   return seed ? (seed^Math.random() * 16 >> seed / 4).toString(16)
               : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, UUID);
+}
+
+
+function run(code, ctx, name){
+  if (ctx === global) {
+    return vm.runInThisContext(code, name || 'global');
+  } else {
+    return vm.runInContext(code, ctx, name);
+  }
+}
+
+function parsify(src){
+  try { return Function(src), true; }
+  catch (e) { return e }
 }

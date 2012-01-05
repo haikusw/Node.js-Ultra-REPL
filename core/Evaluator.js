@@ -83,38 +83,34 @@ Evaluator.prototype = {
     return this.current.initialize();
   },
 
-  inspector: function inspector(obj, context){
-    context = context || this.current.ctx;
-    context._ = obj;
-    return context._;
-  },
-
   evaluate: function evaluate(code){
-    code = code.trim();
-    var errors = [];
-    var result = syntaxTry(code);
-    if (result && result.name === 'SyntaxError') {
-      errors.push(result)
-    } else if (typeof result === 'string') {
-      code = result;
-    }
-    try {
-      result = this.tryContext.runCode(code);
-    } catch (e) {
-      if (result && result.name === 'SyntaxError') {
-        errors.push(e)
-      } else {
-        errors.push(e)
-        //this.current.errors.push(e);
+    var output = {
+      status: 'success',
+      code: code.trim()
+    };
+    output.result = syntaxTry(code);
+    if (output.result.name === 'SyntaxError') {
+      output.status = 'syntax_error';
+    } else {
+      output.code = output.result;
+      try {
+        output.result = this.tryContext.runCode(output.code);
+      } catch (e) {
+        output.result = e;
+        output.status = e.name === 'SyntaxError' ? 'syntax_error' : 'error';
+      }
+      if (output.status !== 'syntax_error') {
+        try {
+          output.result = this.current.runCode(output.code);
+          output.status = 'success';
+        } catch (e) {
+          output.result = e;
+          output.status = 'error';
+        }
       }
     }
-    try {
-      result = this.current.runCode(code);
-    } catch (e) {
-      errors.push(e)
-      return errors //{ result: e, status: 'error', code: code, output: this.inspector(e) };
-    }
-    return { result: result, status: 'success', code: code, output: this.inspector(result) };
+    this.current.history.push(output);
+    return output;
   }
 };
 
@@ -129,17 +125,14 @@ function parsify(src){
 }
 
 function syntaxTry(src){
-  var result, errors = [];
-  src = src || ''; // scoped(src || '');
+  var result;
+  src = src || '';
   if ((result = parsify(src)) === true) return src;
   src += ';';
-  errors.push(result)
   if ((result = parsify(src)) === true) return src;
   src = '( ' + src + '\n)';
-  errors.push(result);
   if ((result = parsify(src)) === true) return src;
-  errors.push(result);
-  return errors;
+  return result;
 }
 
 function scoped(cmd) {

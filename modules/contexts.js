@@ -20,7 +20,6 @@ function contexCommand(action){
       result = action.color(style.context[action]) + ' ' + result.name;
     }
     this.rli.timedWrite('topright', result, 'bgbblack');
-    this.updatePrompt();
     this.refresh();
   }
 }

@@ -5,26 +5,28 @@ var fs = require('fs');
 var loader = require('context-loader');
 
 var builtins = require('../lib/builtins');
+
+var defaults = require('../settings/options').inspector;
 var names = require('../settings/text').names;
 var style = require('../settings/styling');
+
 var nameColors = style.context.names;
 var nameIndex = 1;
 var inspector = loader.loadScript(path.resolve(__dirname, 'inspect.js'));
-var contexts = new Map;
-
+var contexts = new WeakMap;
 
 module.exports = Context;
 
-var defaults = require('../settings/options').inspector;
 
 
 function Context(isGlobal){
-  Object.defineProperty(this, 'name', function(name, color){
+  Object.defineProperty(this, 'name', function(color){
+    var name = names.shift();
     return {
       get: function(){ return this.colors ? name.color(color) : name },
       set: function(v){ name = v }
     };
-  }(names.shift(), nameColors[nameIndex++ % nameColors.length]));
+  }(nameColors[nameIndex++ % nameColors.length]));
 
   Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
 
@@ -95,23 +97,27 @@ Context.prototype = {
     inspector.runInContext(this.ctx);
   },
 
+  globals: function globals(){
+    return run('Object.getOwnPropertyNames(this)', this.ctx);
+  },
+
   runScript: function runScript(script){
     this.scripts.push(script);
-    this.ctx._ = 'snapshot';
-      var result = script.runInContext(this.ctx).result;
-    script.globals = this.ctx._;
+    var globals = this.globals();
+    var result = script.runInContext(this.ctx).result;
+    script.globals = this.globals().filter(function(s){ return !~globals.indexOf(s) });
+    var ctx = this.ctx;
+    globals = script.globals.reduce(function(r, s){
+      r[s] = ctx[s];
+      if (ctx[s] === result) result = r;
+      return r;
+    }, run('({})', this.ctx));
     return result;
   },
 
   runCode: function runCode(code, filename){
-    try {
-      var script = loader.wrap(code, filename);
-    } catch (e) {
-      var script = new NotCompiledScript(code, filename);
-    }
-    if (script) {
-      return this.runScript(script);
-    }
+    var script = loader.wrap(code, filename);
+    return this.runScript(script);
   },
 
   runFile: function runFile(filename){
@@ -131,13 +137,8 @@ Context.prototype = {
     return context;
   },
 
-  getEntities: function getEntities(){
-    this.ctx._ = 'filter';
-    return this.ctx._;
-  },
-
   outputHandler: function outputHandler(id){
-    var last, filter, inspect, O, globals, combine;
+    var last, filter, inspect;
     var handler = save;
     var ctx = this.ctx;
     var thisGlobal = global === this.ctx ? global : vm.runInContext('this', this.ctx);
@@ -150,8 +151,6 @@ Context.prototype = {
     function install(obj){
       filter = obj.filter;
       inspect = obj.inspect;
-      combine = obj.combine;
-      O = obj.O;
       handler = save;
     }
 
@@ -160,41 +159,20 @@ Context.prototype = {
       return filter(thisGlobal, builtins.all);
     }
 
-    function snapshot(){
-      format = output;
-      globals = globals || [];
-      return globals = O('getOwnPropertyNames', thisGlobal).filter(function(n){
-        return !~globals.indexOf(n) && !~builtins.all.indexOf(n);
-      });
-    }
-
     function save(obj){
-      last = { result: obj };
-      if (globals) {
-        last.globals = filter(thisGlobal, globals, true);
-      }
-      globals = null;
+      last = obj;
     }
 
     var output = function output(){
       if (typeof last === 'undefined') return '';
 
-      var obj = last.result;
-      var output = [];
+      var obj = last;
 
       if (!this.builtins && obj === thisGlobal) {
         obj = filter(obj, builtins.all);
       }
 
-      if (typeof obj !== 'undefined') {
-        output.push(inspect(obj, this, style.inspector));
-      }
-
-      if (typeof last.globals !== 'undefined') {
-        output.push(inspect(last.globals, this, style.inspector));
-      }
-
-      return output.join('\n');
+      return inspect(obj, this, style.inspector);
     }.bind(this);
 
     var format = output;
@@ -204,10 +182,6 @@ Context.prototype = {
       set: function(v){
         if (v === id) return handler = install;
         if (v === 'filter') return format = filtered;
-        if (v === 'snapshot' && typeof O !== 'undefined') {
-          globals = O('getOwnPropertyNames', thisGlobal);
-          return format = snapshot;
-        }
         handler(v);
       }
     });

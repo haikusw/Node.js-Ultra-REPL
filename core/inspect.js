@@ -300,7 +300,9 @@ function formatValue(value, key, depth, settings) {
 
   if (settings.showProtos) {
     var proto = Object.getPrototypeOf(value);
-    output.push(settings.style(formatters.Proto(proto), 'Proto', true));
+    if (!~builtins.indexOf(proto)) {
+      output.push(settings.style(formatters.Proto(proto), 'Proto', true));
+    }
   }
 
   return combine(output, base, braces, settings.maxWidth - key.alength - 6 - depth * 2);

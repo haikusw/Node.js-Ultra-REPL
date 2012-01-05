@@ -1,5 +1,7 @@
+var path = require('path');
 var esprima = require('esprima');
 var builtins = require('../lib/builtins');
+
 
 module.exports = [{
   name: 'Generate AST',
@@ -8,8 +10,8 @@ module.exports = [{
 
   action: function(cmd, target){
     // search executed code history first
-    var source = this.context.current.scripts.filter(function(rt){
-      return ~t.globals.indexOf(target);
+    var source = this.context.current.scripts.filter(function(script){
+      return ~script.globals.indexOf(target);
     }, []);
 
     if (source.length){
@@ -20,14 +22,11 @@ module.exports = [{
       source = process.binding('natives')[target];                     // search for builtin Node libs
     } else if (path.existsSync(target)) {
       source = fs.readFileSync(target, 'utf-8');                       // search for js files
-    } else if (typeof target === 'string') {
-      source = target;                                                 // hope that the code itself was passed
     } else {
-      this.context._ = new Error('Unable to Find a Match');
-      return this.inspector();
+      source = target;                                                 // hope that the code itself was passed
     }
-
-    this.context._ = this.context.ctx.ast = esprima.parse(source).body;
+    this.context.ctx.ast = esprima.parse(source).body;
+    this.context._ =  this.context.ctx.ast;
     this.inspector();
   }
 }];

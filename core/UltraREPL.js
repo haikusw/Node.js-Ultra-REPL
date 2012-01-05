@@ -77,9 +77,9 @@ function UltraREPL(options){
     function run(){
       if (!this.buffered.length) return this.updatePrompt();
       var evaled = context.evaluate(this.buffered.join('\n'));
-      if (evaled.status === 'syntax error') {
+      if (evaled.status === 'syntax_error') {
         if (!finalize.errored) {
-          this.timedPrompt(evaled.output + evaled.result.stack);
+          this.timedPrompt(evaled.result.name);
           finalize.errored = true;
         }
         return this.updatePrompt();
@@ -89,16 +89,17 @@ function UltraREPL(options){
 
     function finalize(evaled){
       finalize.errored = false;
-      this.inspector(evaled.status === 'success' ? evaled.output : evaled);
+      this.context._ = evaled.result;
+      this.inspector();
       this.resetInput();
     }
   }.bind(this));
 
   commands(this);
   this.context.columns = this.width - 10;
+  this.pages = (new Results).bisect(this.height - 2);
   this.updatePrompt();
   this.loadScreen();
-  this.pages = (new Results).bisect(this.height - 2);
 }
 
 
@@ -127,7 +128,7 @@ UltraREPL.prototype = {
     intro.push('', seehelp);
 
     this.rli.writeFrom(intro, (this.width - intro[0].alength) / 2 | 0, (this.height - 2 - intro.length) / 2 | 0);
-
+    this.header();
   },
 
   keyword: function keyword(cmd){
@@ -142,7 +143,7 @@ UltraREPL.prototype = {
     if (result) {
       if (Object(result) === result)  {
         this.context._ = result;
-        this.inspector(this.context._);
+        this.inspector();
       }
       return result;
     }
@@ -168,8 +169,7 @@ UltraREPL.prototype = {
   },
 
   showHelp: function showHelp(info){
-    this.rli.clearScreen();
-    this.rli.writeFrom(this.generateHelp(info || this.help, this.width));
+    this.rli.writeFrom(this.generateHelp(info || this.help, this.width), 0, 1);
     this.resetInput();
   },
 
@@ -199,6 +199,7 @@ UltraREPL.prototype = {
   refresh: function refresh(){
     this.context._ = this.context.ctx;
     this.inspector();
+    this.updatePrompt();
   },
 
   inspector: function inspector(obj){
@@ -212,7 +213,6 @@ UltraREPL.prototype = {
     var results = new Results(output);
     this.pages = results.bisect(this.height - 2);
     this.rli.writePage(this.pages.get(0));
-    this.header();
     this.resetInput();
   },
 

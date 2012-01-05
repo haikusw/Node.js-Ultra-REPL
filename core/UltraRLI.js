@@ -155,20 +155,17 @@ UltraRLI.prototype = {
     left = left || 0;
     this.output.cursorTo(left, top + 1);
     for (var i = 0, len = output.length; i + top < this.height - 1 && i < output.length; i++) {
+      this.output.cursorTo(left, i + top);
       this.output.write(output[i]);
       this.output.clearLine(1);
-      this.output.cursorTo(left);
-      this.output.moveCursor(0, 1);
     }
     this.home();
   },
 
   writePage: function writePage(lines){
-    for (var i = 0; i < this.height - 2; i++) {
+    for (var i = 0; i < this.height - 2 && i < lines.length; i++) {
       this.output.cursorTo(0, i + 1);
-      if (i < lines.length) {
-        this.output.write(lines[i] + ' '.repeat(this.width - lines[i].width - 1));
-      }
+      this.output.write(lines[i]);
       this.output.clearLine(1);
     };
   },

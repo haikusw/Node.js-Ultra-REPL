@@ -1,5 +1,6 @@
 var style = require('../settings/styling');
 
+
 function toggle(obj, prop){
   return function(){
     if (typeof prop === 'undefined') {
@@ -15,24 +16,24 @@ function toggle(obj, prop){
 
 
 module.exports = [
-  { name: 'Toggle Builtins',
-    help: 'Toggle whether default built-in objects are shown.',
-    defaultTrigger: key('f2'),
-    action: toggle('context', 'builtins')
-  },
   { name: 'Toggle Hiddens',
     help: 'Toggle whether hidden properties are shown.',
-    defaultTrigger: key('f3'),
+    defaultTrigger: { type: 'keybind', trigger: 'f2' },
     action: toggle('context', 'hiddens')
+  },
+  { name: 'Toggle Builtins',
+    help: 'Toggle whether default built-in objects are shown.',
+    defaultTrigger: { type: 'keybind', trigger: 'f3' },
+    action: toggle('context', 'builtins')
   },
   { name: 'Toggle __proto__',
     help: 'Toggle whether [[prototype]] trees are displayed.',
-    defaultTrigger: key('f4'),
+    defaultTrigger: { type: 'keybind', trigger: 'f4' },
     action: toggle('context', 'protos')
   },
   { name: 'Inspect Depth--',
     help: 'Decrease inspector recurse depth',
-    defaultTrigger: key('f5'),
+    defaultTrigger: { type: 'keybind', trigger: 'f5' },
     action: function(){
       if (this.context.depth > 1) {
         this.context.depth--;
@@ -43,7 +44,7 @@ module.exports = [
   },
   { name: 'Inspect Depth++',
     help: 'Increase inspector recurse depth',
-    defaultTrigger: key('f6'),
+    defaultTrigger: { type: 'keybind', trigger: 'f6' },
     action: function(){
       this.context.depth++;
       this.refresh();
@@ -52,12 +53,12 @@ module.exports = [
   },
   { name: 'Toggle Colors',
     help: 'Toggle whether output is colored.',
-    defaultTrigger: key('f9'),
+    defaultTrigger: { type: 'keybind', trigger: 'f9' },
     action: toggle('context', 'colors')
   },
   { name: 'Set Inspect Depth',
     help: 'Set inspector recurse depth\n',
-    defaultTrigger: dot('depth'),
+    defaultTrigger: { type: 'command', trigger: '.depth' },
     action: function(cmd, depth){
       depth = parseInt(depth, 10);
       if (depth === this.context.depth || !(depth > 0)) {
@@ -71,8 +72,3 @@ module.exports = [
     }
   },
 ]
-
-
-function keyword(x){ return { type: 'keyword', trigger: x } }
-function dot(x){ return { type: 'command', trigger: '.' + x } }
-function key(x){ return { type: 'keybind', trigger: x } }

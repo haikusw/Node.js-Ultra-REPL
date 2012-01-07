@@ -24,7 +24,7 @@ var CoffeeContext = heritable({
 module.exports = [{
   name: 'Create Coffee Context',
   help: 'Create a new context that evaluates input as CoffeeScript',
-  defaultTrigger: key('alt+c'),
+  defaultTrigger: { type: 'keybind', trigger: 'alt+c' },
   action: function(){
     var result = this.context.add(new CoffeeContext);
     if (isError(result)) {
@@ -36,8 +36,3 @@ module.exports = [{
     this.refresh();
   }
 }]
-
-
-function keyword(x){ return { type: 'keyword', trigger: x } }
-function dot(x){ return { type: 'command', trigger: '.' + x } }
-function key(x){ return { type: 'keybind', trigger: x } }

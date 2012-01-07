@@ -2,6 +2,8 @@ var builtins = require('../lib/builtins');
 var isError = require('../lib/object-utils').is('Error');
 var style = require('../settings/styling');
 
+
+
 function injectNodeBuiltins(){
   this.context.ctx.global = this.context.ctx;
   builtins.node.forEach(function(name){
@@ -9,7 +11,6 @@ function injectNodeBuiltins(){
   }, this);
   this.refresh();
 }
-
 
 function contexCommand(action){
   return function(){
@@ -20,52 +21,54 @@ function contexCommand(action){
       result = action.color(style.context[action]) + ' ' + result.name;
     }
     this.rli.timedWrite('topright', result, 'bgbblack');
+    this.context.ctx._ = this.context.ctx;
     this.refresh();
   }
 }
-
 
 module.exports = [
   { name: 'Inject Node Builtins',
     help: 'Add the default Node global variables to the current context. This includes process, console, '+
           'Buffer, and the various ArrayBuffer functions.',
-    defaultTrigger: key('alt+a'),
+    defaultTrigger: { type: 'keybind', trigger: 'alt+a' },
     action: injectNodeBuiltins
   },
   { name: 'Create Context',
     help: 'Create, initialize, and switch into a new V8 context.',
-    defaultTrigger: key('ctrl+shift+up'),
+    defaultTrigger: { type: 'keybind', trigger: 'ctrl+shift+up' },
     action: contexCommand('create')
   },
   { name: 'Delete Context',
     help: 'Delete the current V8 context and all objects unreferences externally.',
-    defaultTrigger: key('ctrl+shift+down'),
+    defaultTrigger: { type: 'keybind', trigger: 'ctrl+shift+down' },
     action: contexCommand('remove')
   },
   { name: 'Reset Context',
     help: 'Reset current context.',
-    defaultTrigger: dot('r'),
+    defaultTrigger: { type: 'command', trigger: '.r' },
     action: contexCommand( 'reset')
   },
   { name: 'Next Context',
     help: 'Switch to the previous next.',
-    defaultTrigger: key('ctrl+up'),
+    defaultTrigger: { type: 'keybind', trigger: 'ctrl+up' },
     action: function(){
       this.context.change(1);
+      this.context.ctx._ = this.context.ctx;
       this.refresh();
     }
   },
   { name: 'Previous Context',
     help: 'Switch to the previous context.',
-    defaultTrigger: key('ctrl+down'),
+    defaultTrigger: { type: 'keybind', trigger: 'ctrl+down' },
     action: function(){
       this.context.change(-1);
+      this.context.ctx._ = this.context.ctx;
       this.refresh();
     }
   },
   { name: 'Label Context',
     help: 'Change the label of the current context.\n',
-    defaultTrigger: dot('label'),
+    defaultTrigger: { type: 'command', trigger: '.label' },
     action: function(cmd, name){
       this.context.name = name;
       this.updatePrompt();
@@ -74,6 +77,3 @@ module.exports = [
 ]
 
 
-function keyword(x){ return { type: 'keyword', trigger: x } }
-function dot(x){ return { type: 'command', trigger: '.' + x } }
-function key(x){ return { type: 'keybind', trigger: x } }

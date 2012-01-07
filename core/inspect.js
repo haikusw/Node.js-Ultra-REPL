@@ -76,11 +76,13 @@ Object.defineProperties(String.prototype, {
 var styles;
 
 function inspect(obj, options, styling) {
+  options = options ? options : {};
   var settings = {
     showHidden: options.hiddens,
     showProtos: options.protos,
     maxWidth: options.columns || 60,
     style: options.colors ? color : noColor,
+    sort: options.sort,
     seen: []
   };
 
@@ -160,13 +162,13 @@ var formatters = {
   String      : quotes,
   Undefined   : String,
   Proto   : function(f){
-    var name = '';
+    var name = 'Unknown';
     if (f === null) {
       name = 'Null';
     } else if (Object(f) === f && 'constructor' in f) {
       name = f.constructor.name;
     }
-    return 'Proto' + (name ? ': ' + name : '');
+    return '[Proto' + (name ? ': ' + name : '') + ']';
   }
 };
 
@@ -217,6 +219,9 @@ function formatValue(value, key, depth, settings) {
 
   var base = '';
   var type = isConstructor(value) ? 'Constructor' : getClass(value);
+  if (key === '__proto__') {
+    type = 'Proto';
+  }
   var array = isArray(value);
   var braces = array ? settings.square : settings.curly;
 
@@ -242,36 +247,38 @@ function formatValue(value, key, depth, settings) {
     return settings.style('More', 'More', true);
   }
 
-  if (!settings.showHidden) {
-    var properties = Object.keys(value);
-  } else {
-    var properties = Object.getOwnPropertyNames(value);
+  var properties = Object[settings.showHidden ? 'getOwnPropertyNames' : 'keys'](value);
 
-    if (typeof value === 'function') {
-      properties = properties.filter(function(key) {
-        // hide useless properties every function has
-        return !(key in Function);
-      });
-      // show prototype last for constructors
-      if (type === 'Constructor') {
-        properties.push('prototype');
-      }
+  settings.sort && properties.sort();
+
+  if (typeof value === 'function') {
+    properties = properties.filter(function(key) {
+      // hide useless properties every function has
+      return !(key in Function);
+    });
+  }
+
+  // show prototype last for constructors
+  if (type === 'Constructor') {
+    var desc = Object.getOwnPropertyDescriptor(value, 'prototype');
+    if (desc && (settings.showHidden || desc.enumerable)) {
+      properties.push('prototype');
     }
   }
 
   if (properties.length === 0) {
     // no properties so return '[]' or '{}'
-    if (base) {
-      return base;
-    }
-    if (!array || value.length === 0) {
-      return braces.join('');
-    }
+    if (base) return base;
+
+    if (!array || value.length === 0) return braces.join('');
   }
 
-  //if (settings.showProtos && !~builtins.indexOf(proto)) {
-  //  properties.push('__proto__');
-  //}
+  if (settings.showProtos) {
+    var proto = Object.getPrototypeOf(value);
+    if (!~builtins.indexOf(proto)) {
+      properties.push('__proto__');
+    }
+  }
 
   settings.seen.push(value);
 
@@ -292,18 +299,9 @@ function formatValue(value, key, depth, settings) {
   properties.forEach(function(key) {
     if (!array || !numeric.test(key)) {
       var prop = formatProperty(value, key, depth, settings, array);
-      if (prop.length) {
-        output.push(prop);
-      }
+      prop.length && output.push(prop);
     }
   });
-
-  if (settings.showProtos) {
-    var proto = Object.getPrototypeOf(value);
-    if (!~builtins.indexOf(proto)) {
-      output.push(settings.style(formatters.Proto(proto), 'Proto', true));
-    }
-  }
 
   return combine(output, base, braces, settings.maxWidth - key.alength - 6 - depth * 2);
 }
@@ -337,7 +335,7 @@ function formatProperty(value, key, depth, settings, array) {
     if (~settings.seen.indexOf(val.value)) {
       // already seen
       if (key !== 'constructor') {
-          str = settings.style('Circular', 'Circular', true);
+        str = settings.style('Circular', 'Circular', true);
       } else {
         // hide redundent constructor reference
         return '';
@@ -358,9 +356,7 @@ function formatProperty(value, key, depth, settings, array) {
   }
 
   // array indexes don't display their name
-  if (array && numeric.test(key)) {
-    return str;
-  }
+  if (array && numeric.test(key)) return str;
 
   var nameFormat;
 

@@ -1,60 +1,58 @@
-module.exports = {
-  'Command List'        : key('f1'),
-  'Next Page'           : key('pgdn'),
-  'Previous Page'       : key('pgup'),
-  'Clear Input/Screen'  : key('esc'),
-  'Clear Screen'        : key('esc esc'),
-  'Exit'                : key('esc esc esc'),
-  'Inspect Context'     : key('ctrl+z'),
+module.exports = function(keyword, command, keybind){
+  return {
+    'Command List'        : keybind('f1'),
+    'Next Page'           : keybind('pgdn'),
+    'Previous Page'       : keybind('pgup'),
+    'Clear Input/Screen'  : keybind('esc'),
+    'Clear Screen'        : keybind('esc esc'),
+    'Exit'                : keybind('esc esc esc'),
+    'Inspect Context'     : keybind('ctrl+z'),
 
 
-  'Require'             : dot('req'),
-  'Load REPL Module'    : dot('mod'),
+    'Require'             : command('req'),
+    'Load REPL Module'    : command('mod'),
 
-  'Delete Right'        : key('del'),
-  'Delete Left'         : key('bksp'),
-  'Delete Word Right'   : key('ctrl+del'),
-  'Delete Word Left'    : key('ctrl+bksp'),
-  'Delete Line Right'   : key('ctrl+shift+del'),
-  'Delete Line Left'    : key('ctrl+shift+bksp'),
+    'Delete Right'        : keybind('del'),
+    'Delete Left'         : keybind('bksp'),
+    'Delete Word Right'   : keybind('ctrl+del'),
+    'Delete Word Left'    : keybind('ctrl+bksp'),
+    'Delete Line Right'   : keybind('ctrl+shift+del'),
+    'Delete Line Left'    : keybind('ctrl+shift+bksp'),
 
-  'Move Left'           : key('left'),
-  'Move Right'          : key('right'),
-  'Word Left'           : key('ctrl+left'),
-  'Word Right'          : key('ctrl+right'),
-  'Line Left'           : key('home'),
-  'Line Right'          : key('end'),
+    'Move Left'           : keybind('left'),
+    'Move Right'          : keybind('right'),
+    'Word Left'           : keybind('ctrl+left'),
+    'Word Right'          : keybind('ctrl+right'),
+    'Line Left'           : keybind('home'),
+    'Line Right'          : keybind('end'),
 
-  'History Prev'        : key('up'),
-  'History Next'        : key('down'),
+    'History Prev'        : keybind('up'),
+    'History Next'        : keybind('down'),
 
-  'Line'                : key('enter'),
-  //'Tab Complete'        : key('tab'),
+    'Line'                : keybind('enter'),
+    //'Tab Complete'        : keybind('tab'),
 
-  // Toggles
-  'Toggle Hiddens'      : key('f2'),
-  'Toggle Builtins'     : key('f3'),
-  'Toggle __proto__'    : key('f4'),
-  'Inspect Depth--'     : key('f5'),
-  'Inspect Depth++'     : key('f6'),
-  'Toggle Colors'       : key('f9'),
-  'Set Inspect Depth'   : dot('depth'),
+    // Toggles
+    'Toggle Hiddens'      : keybind('f2'),
+    'Toggle Builtins'     : keybind('f3'),
+    'Toggle __proto__'    : keybind('f4'),
+    'Inspect Depth--'     : keybind('f5'),
+    'Inspect Depth++'     : keybind('f6'),
+    'Toggle Colors'       : keybind('f9'),
+    'Set Inspect Depth'   : command('depth'),
 
-  // Context Controls
-  'Inject Node Builtins': key('alt+a'),
-  'Create Context'      : key('ctrl+shift+up'),
-  'Delete Context'      : key('ctrl+shift+down'),
-  'Reset Context'       : dot('reset'),
-  'Next Context'        : key('ctrl+up'),
-  'Previous Context'    : key('ctrl+down'),
-  'Label Context'       : dot('label'),
+    // Context Controls
+    'Inject Node Builtins': keybind('alt+a'),
+    'Create Context'      : keybind('ctrl+shift+up'),
+    'Delete Context'      : keybind('ctrl+shift+down'),
+    'Reset Context'       : command('reset'),
+    'Next Context'        : keybind('ctrl+up'),
+    'Previous Context'    : keybind('ctrl+down'),
+    'Label Context'       : command('label'),
 
-  // REPL Development
-  'Inject REPL'         : key('f12'),
-  'Toggle Key Display'  : key('f11'),
-  'Color Test'          : key('f10'),
-};
-
-function keyword(x){ return { type: 'keyword', trigger: x } }
-function dot(x){ return { type: 'command', trigger: '.' + x } }
-function key(x){ return { type: 'keybind', trigger: x } }
+    // REPL Development
+    'Inject REPL'         : keybind('f12'),
+    'Toggle Key Display'  : keybind('f11'),
+    'Color Test'          : keybind('f10'),
+  };
+}

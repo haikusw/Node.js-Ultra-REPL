@@ -4,11 +4,15 @@ var path = require('path');
 
 var Dict = require('../lib/Dict');
 
-var controls = require('../settings/controls');
 var style = require('../settings/styling');
 
 // TODO turn this whole thing in a class with some structure
 
+var controls = require('../settings/controls')(
+  function(x){ return { type: 'keyword', trigger: x } },
+  function(x){ return { type: 'command', trigger: x } },
+  function(x){ return { type: 'keybind', trigger: x } }
+);
 
 
 module.exports = function(target){

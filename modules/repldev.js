@@ -31,6 +31,9 @@ module.exports = [
     help: 'Test ANSI colors\n',
     defaultTrigger: { type: 'keybind', trigger: 'f10' },
     action: function(){
+      this.rli.clearScreen();
+      this.header();
+
       var names = String.prototype.color.names;
       var width = names.join('').length / 2;
       var left = (this.width - width) / 2;
@@ -48,7 +51,7 @@ module.exports = [
         this.output.write(color.slice(2).color(color) + ' ')
       }, this);
 
-      this.rli.home();
+      this.displayPrompt();
     }
   },
 ]

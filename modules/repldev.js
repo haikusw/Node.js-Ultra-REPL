@@ -31,11 +31,11 @@ module.exports = [
     help: 'Test ANSI colors\n',
     defaultTrigger: { type: 'keybind', trigger: 'f10' },
     action: function(){
+      var names = String.prototype.color.names;
       var width = names.join('').length / 2;
       var left = (this.width - width) / 2;
       var top = this.height / 2 - 2;
 
-      var names = String.prototype.color.names;
       names = [names.slice(0, names.length / 2), names.slice(names.length / 2 + 1)];
 
       this.output.cursorTo(left, top);

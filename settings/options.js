@@ -7,6 +7,8 @@ module.exports = {
     colors: true
   },
   autoload: [
+    'basic',
+    'navigation',
     'toggles',
     'contexts',
     'repldev'

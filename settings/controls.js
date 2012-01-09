@@ -9,8 +9,8 @@ module.exports = function(keyword, command, keybind){
     'Inspect Context'     : keybind('ctrl+z'),
 
 
-    'Require'             : command('req'),
-    'Load REPL Module'    : command('mod'),
+    'Require'             : command('.req'),
+    'Load REPL Module'    : command('.mod'),
 
     'Delete Right'        : keybind('del'),
     'Delete Left'         : keybind('bksp'),
@@ -39,16 +39,16 @@ module.exports = function(keyword, command, keybind){
     'Inspect Depth--'     : keybind('f5'),
     'Inspect Depth++'     : keybind('f6'),
     'Toggle Colors'       : keybind('f9'),
-    'Set Inspect Depth'   : command('depth'),
+    'Set Inspect Depth'   : command('.depth'),
 
     // Context Controls
     'Inject Node Builtins': keybind('alt+a'),
     'Create Context'      : keybind('ctrl+shift+up'),
     'Delete Context'      : keybind('ctrl+shift+down'),
-    'Reset Context'       : command('reset'),
+    'Reset Context'       : command('.reset'),
     'Next Context'        : keybind('ctrl+up'),
     'Previous Context'    : keybind('ctrl+down'),
-    'Label Context'       : command('label'),
+    'Label Context'       : command('.label'),
 
     // REPL Development
     'Inject REPL'         : keybind('f12'),

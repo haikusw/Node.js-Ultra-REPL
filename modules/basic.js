@@ -21,31 +21,30 @@ module.exports = [
     type: 'keywords',
     defaultTrigger: builtins.libs,
     action: function(lib){
-      return require(lib);
+      return this.context.ctx[name] = require(lib);
     }
   },
   { name: 'Require',
-    help: 'Require for contexts without exposing require to the context. Two parameters: .f propName libName. .f functionAsLib -> functionAsLib.name. Object -> properties copied.',
+    help: 'Require for contexts without exposing require to the context.\n'+
+          '".req lib"      -> `global.lib = require("lib")`,\n'+
+          '".req lib"      -> `global[require("lib").name] = require("lib")`,\n'+
+          '".req name lib" -> `global.name = require("lib")`',
     defaultTrigger: { type: 'command', trigger: '.req' },
     action: function(cmd, input){
       var parts = input.split(' ');
-      var name = parts[0];
-
-      if (parts.length === 2) {
-        var lib = this.context.ctx[name] = require(parts[1]);
-      } else {
-        var lib = require(parts[0]);
-        if (typeof lib === 'function' && lib.name.length) {
-          this.context.ctx[lib.name] = lib;
-        } else if (Object.prototype.toString.call(lib) === '[object Object]') {
-          Object.keys(lib).forEach(function(name){
-            this.context.ctx[name] = lib[name];
-          }, this);
-        } else {
-          this.context.ctx[name] = lib;
+      var name = parts.pop();
+      var lib = require(name);
+      if (parts.length) {
+        name = parts.pop();
+      } else if (Object(lib) === lib) {
+        if (lib.name && lib.name.length) {
+          name = lib.name;
+        } else if (typeof lib === 'object' && Object.getOwnPropertyNames(lib).length === 1) {
+          name = Object.getOwnPropertyNames(lib)[0];
+          lib = lib[name];
         }
       }
-      return lib;
+      return this.context.ctx[name] = lib;
     }
   },
   { name: 'Inspect Context',

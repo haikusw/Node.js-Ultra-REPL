@@ -24,7 +24,7 @@
 // currently waiting for acceptance as a pull request https://github.com/joyent/node/pull/2360
 // It has to be run separately in each context anyway due to peculiarities with V8's contexts.
 
-_ = (function(){
+_ = (function(global){
 
 function widest(arr, field){
   return arr.reduce(function(a, b){
@@ -273,7 +273,7 @@ function formatValue(value, key, depth, settings) {
     if (!array || value.length === 0) return braces.join('');
   }
 
-  if (settings.showProtos) {
+  if (settings.showProtos && value !== global) {
     var proto = Object.getPrototypeOf(value);
     if (!~builtins.indexOf(proto)) {
       properties.push('__proto__');
@@ -468,31 +468,9 @@ function filter(obj, arr, include){
   },{});
 }
 
-function O(fn, obj, prop){
-  return Object[fn](obj, prop);
-}
-
 return {
   inspect: inspect,
-  filter: filter,
-  combine: function(o, p){
-    var out = {}, proto = Object.prototype;
-    if (Object(o) === o) {
-      proto = Object.getPrototypeOf(o);
-      Object.getOwnPropertyNames(o).reduce(function(r, prop){
-        r[prop] = Object.getOwnPropertyDescriptor(o, prop);
-        return r;
-      }, out);
-    }
-    if (Object(p) === p) {
-      Object.getOwnPropertyNames(p).reduce(function(r, prop){
-        r[prop] = Object.getOwnPropertyDescriptor(p, prop);
-        return r;
-      }, out);
-    }
-    return Object.create(proto, out);
-  },
-  O: O
+  filter: filter
 };
 
-})();
+})(this);

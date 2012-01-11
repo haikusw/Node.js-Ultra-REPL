@@ -1,5 +1,5 @@
+var vm = require('vm');
 var builtins = require('../lib/builtins');
-
 
 module.exports = [
   { name: 'Command List',
@@ -51,8 +51,7 @@ module.exports = [
     help: 'Shortcut for writing `this` to inspect the current context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+z' },
     action: function(){
-      this.context.ctx._ = this.context.ctx;
-      this.inspector();
+      this.inspector(vm.runInContext('this', this.context.ctx));
     }
   },
   { name: 'Clear Input/Screen',

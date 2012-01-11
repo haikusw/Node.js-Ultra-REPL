@@ -11,17 +11,14 @@ module.exports = [
     help: 'Dynamically load a module made to integrate with UltraREPL.',
     defaultTrigger: { type: 'command', trigger: '.mod' },
     action: function(cmd, name){
-      var help = this.loadModule(name);
-      this.showHelp(help);
-      return true;
+      this.showHelp(this.loadModule(name));
     }
   },
   { name: 'Auto-Includer',
     help: 'Type the name of a built-in module to include it on the current context.',
-    type: 'keywords',
-    defaultTrigger: builtins.libs,
+    defaultTrigger: { type: 'keywords', trigger: builtins.libs },
     action: function(lib){
-      return this.context.ctx[name] = require(lib);
+      return this.context.ctx[lib] = require(lib);
     }
   },
   { name: 'Require',
@@ -51,7 +48,7 @@ module.exports = [
     help: 'Shortcut for writing `this` to inspect the current context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+z' },
     action: function(){
-      return this.context.global;
+      return this.context.ctx;
     }
   },
   { name: 'Clear Input/Screen',
@@ -69,7 +66,9 @@ module.exports = [
   { name: 'Exit',
     help: 'Exit the REPL.\n',
     defaultTrigger: { type: 'keybind', trigger: 'esc esc esc' },
-    action: function(){ this.rli.close() }
+    action: function(){
+      this.rli.close();
+    }
   }
 ];
 

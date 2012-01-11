@@ -151,7 +151,7 @@ Context.prototype = {
 
       var obj = last;
 
-      if (!this.builtins && obj === this.global) {
+      if (!this.builtins && (obj === this.global || obj === this.ctx)) {
         obj = filter(obj, builtins.all);
       }
 

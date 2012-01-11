@@ -8,7 +8,6 @@ module.exports = function(keyword, command, keybind){
     'Exit'                : keybind('esc esc esc'),
     'Inspect Context'     : keybind('ctrl+z'),
 
-
     'Require'             : command('.req'),
     'Load REPL Module'    : command('.mod'),
 

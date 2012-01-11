@@ -8,23 +8,26 @@ var style = require('../settings/styling');
 
 // TODO turn this whole thing in a class with some structure
 
-var controls = require('../settings/controls')(
-  function(x){ return { type: 'keyword', trigger: x } },
-  function(x){ return { type: 'command', trigger: x } },
-  function(x){ return { type: 'keybind', trigger: x } }
-);
 
 
 module.exports = function(target){
   var keybinds = new Dict;
   var lastpress = Date.now();
   var cmds = target.commands = new Dict;
+  var commands = {};
+
+  var controls = require('../settings/controls')(
+    function(x){ return { type: 'keyword', trigger: x } },
+    function(x){ return { type: 'command', trigger: x } },
+    function(x){ return { type: 'keybind', trigger: x } }
+  );
 
   target.rli.on('keybind', function(key){
     if (keybinds.has(key.bind)) {
       key.used = true;
       keybinds[key.bind].forEach(function(action){
-        action.call(target);
+        var result = action.call(target);
+        result && target.inspector(result);
       });
     }
 
@@ -66,53 +69,32 @@ module.exports = function(target){
   };
 
 
-  var loadModule = target.loadModule = function loadModule(name){
-    var commands = {};
+  function loadModule(name){
     var mod = require(path.resolve(__dirname, '../modules', name));
 
-    var help = mod.map(function(command){
-      commands[command.name] = command;
-
-      if (command.defaultTrigger && !(command.name in controls)) {
-         controls[command.name] = command.defaultTrigger
-      };
-
-      if (!command.help) return '';
-
-      var info = { name: command.name, help: command.help };
-      if (controls[command.name]) {
-        info.type = controls[command.name].type;
-        info.trigger =  controls[command.name].trigger;
-      }
-      return info;
-    });
-
-    initializeControls(commands, controls);
-    return help;
-  };
-
-  require('../settings/options').autoload.forEach(loadModule);
-
-  function initializeControls(commands, controls){
-    Object.keys(commands).forEach(function(name){
-      var control = controls[name] || commands[name];
+    return mod.map(function(command){
+      var control = controls[command.name] || command.defaultTrigger;
 
       if (control.type) {
-        handlers[control.type](control.trigger, commands[name].action);
+        handlers[control.type](control.trigger, command.action);
       }
-
-      if (!('help' in commands[name])) return;
 
       if (control.type === 'keybind' && process.platform === 'darwin') {
         control && control.trigger = control.trigger.replace('ctrl+', 'command+');
       }
 
-      target.help.push({
-        name: name,
-        help: commands[name].help,
+      return {
+        name: command.name,
+        help: command.help,
         type: control.type,
         trigger: control.trigger
-      });
+      };
     });
-  }
+  };
+
+  target.loadModule = loadModule;
+
+  require('../settings/options').autoload.forEach(function(name){
+    this.push.apply(this, loadModule(name));
+  }, target.help);
 }

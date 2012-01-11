@@ -250,7 +250,7 @@ function generateHelp(help, screenW){
   var helpL = nameW + triggerW + 2;
   var helpR = screenW - nameW - triggerW - 8;
   var last = 0;
-  return help.map(function(cmd){
+  return help.filter(function(cmd){ return cmd.help }).map(function(cmd){
     var output = {
       help: cmd.help.color((last ^= 1) ? 'bwhite' : 'bblack'),
       type: cmd.type,

@@ -14,7 +14,6 @@ module.exports = function(target){
   var keybinds = new Dict;
   var lastpress = Date.now();
   var cmds = target.commands = new Dict;
-  var commands = {};
 
   var controls = require('../settings/controls')(
     function(x){ return { type: 'keyword', trigger: x } },
@@ -27,7 +26,10 @@ module.exports = function(target){
       key.used = true;
       keybinds[key.bind].forEach(function(action){
         var result = action.call(target);
-        result && target.inspector(result);
+        if (typeof result !== 'undefined') {
+          target.context._ = result;
+          target.inspector();
+        }
       });
     }
 

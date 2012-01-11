@@ -22,17 +22,18 @@ Evaluator.prototype = {
   __proto__: Object.create(EventEmitter.prototype),
   constructor: Evaluator,
 
-  get index(){    return this.iterator.current },
-  get count(){    return this.contexts.count() },
-  get ctx(){      return this.current.ctx      },
+  get index(){    return this.iterator.current  },
+  get count(){    return this.contexts.count()  },
+  get ctx(){      return this.current.ctx       },
+  get global(){   return this.current.global    },
 
-  get builtins(){ return this.current.builtins },
+  get builtins(){ return this.current.builtins  },
   get hiddens(){  return this.current.hiddens  },
-  get protos(){   return this.current.protos   },
-  get colors(){   return this.current.colors   },
+  get protos(){   return this.current.protos    },
+  get colors(){   return this.current.colors    },
   get depth(){    return this.current.depth    },
   get name(){     return this.current.name     },
-  get _(){        return this.current.ctx._    },
+  get _(){        return this.current.ctx._     },
 
   set builtins(v){ this.current.builtins = v },
   set hiddens(v){  this.current.hiddens = v  },
@@ -107,3 +108,4 @@ Evaluator.prototype = {
     return output;
   }
 };
+

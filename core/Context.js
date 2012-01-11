@@ -29,7 +29,7 @@ function Context(isGlobal){
     if (module.globalConfigured) return global;
     module.globalConfigured = true;
 
-    this.ctx = global;
+    this.global = this.ctx = global;
 
     Object.defineProperties(global, {
       module:   { value: module },
@@ -55,7 +55,8 @@ Context.prototype = {
   initialize: function initialize(){
     // initialize context
     this.ctx = vm.createContext();
-    run('this', this.ctx);
+    // the wrapper Context object is different from the actual global
+    this.global = run('this', this.ctx);
 
     // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
     'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
@@ -127,20 +128,13 @@ Context.prototype = {
     context.hiddens = this.hiddens;
     context.colors = this.colors;
     context.depth = this.depth;
-    this.scripts.forEach(function(script){ context.runScript(script) });
+    this.scripts.forEach(context.runScript.bind(context));
     return context;
   },
 
   outputHandler: function outputHandler(id){
     var last, inspect, filter;
     var handler = save;
-    var ctx = this.ctx;
-    var thisGlobal = global === this.ctx ? global : vm.runInContext('this', this.ctx);
-
-    function prop(name){
-      if (ctx === global) return global[name];
-      return vm.runInContext('this['+name+']', ctx);
-    }
 
     function install(obj){
       filter = obj.filter;
@@ -157,7 +151,7 @@ Context.prototype = {
 
       var obj = last;
 
-      if (!this.builtins && obj === thisGlobal) {
+      if (!this.builtins && obj === this.global) {
         obj = filter(obj, builtins.all);
       }
 

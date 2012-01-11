@@ -9,7 +9,7 @@ module.exports = function(keyword, command, keybind){
     'Inspect Context'     : keybind('ctrl+z'),
 
     'Require'             : command('.req'),
-    'Load REPL Module'    : command('.mod'),
+    'Load Plugin'    : command('.plugin'),
 
     'Delete Right'        : keybind('del'),
     'Delete Left'         : keybind('bksp'),
@@ -50,8 +50,8 @@ module.exports = function(keyword, command, keybind){
     'Label Context'       : command('.label'),
 
     // REPL Development
-    'Inject REPL'         : keybind('f12'),
-    'Toggle Key Display'  : keybind('f11'),
     'Color Test'          : keybind('f10'),
+    'Toggle Key Display'  : keybind('f11'),
+    'Inject REPL'         : keybind('f12'),
   };
 }

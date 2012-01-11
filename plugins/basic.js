@@ -7,11 +7,11 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'f1' },
     action: call('showHelp')
   },
-  { name: 'Load REPL Module',
-    help: 'Dynamically load a module made to integrate with UltraREPL.',
-    defaultTrigger: { type: 'command', trigger: '.mod' },
+  { name: 'Load Plugin',
+    help: 'Dynamically load an UltraREPL plugin.',
+    defaultTrigger: { type: 'command', trigger: '.plugin' },
     action: function(cmd, name){
-      this.showHelp(this.loadModule(name));
+      this.showHelp(this.loadPlugin(name));
     }
   },
   { name: 'Auto-Includer',

@@ -71,10 +71,10 @@ module.exports = function(target){
   };
 
 
-  function loadModule(name){
-    var mod = require(path.resolve(__dirname, '../modules', name));
+  function loadPlugin(name){
+    var plugins = require(path.resolve(__dirname, '../plugins', name));
 
-    return mod.map(function(command){
+    return plugins.map(function(command){
       var control = controls[command.name] || command.defaultTrigger;
 
       if (control.type) {
@@ -94,9 +94,9 @@ module.exports = function(target){
     });
   };
 
-  target.loadModule = loadModule;
+  target.loadPlugin = loadPlugin;
 
   require('../settings/options').autoload.forEach(function(name){
-    this.push.apply(this, loadModule(name));
+    this.push.apply(this, loadPlugin(name));
   }, target.help);
 }

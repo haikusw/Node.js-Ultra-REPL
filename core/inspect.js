@@ -76,11 +76,12 @@ Object.defineProperties(String.prototype, {
 var styles;
 
 function inspect(obj, options, styling) {
-  options = options ? options : {};
+  options = options || {};
   var settings = {
-    showHidden: options.hiddens,
+    showHidden: !!options.hiddens,
     showProtos: options.protos,
     maxWidth: options.columns || 60,
+    colors: !!options.colors,
     style: options.colors ? color : noColor,
     sort: options.sort,
     seen: []
@@ -161,7 +162,7 @@ var formatters = {
   RegExp      : callbind(RegExp.prototype.toString),
   String      : quotes,
   Undefined   : String,
-  Proto   : function(f){
+  Proto       : function(f){
     var name = 'Unknown';
     if (f === null) {
       name = 'Null';
@@ -214,7 +215,7 @@ function formatValue(value, key, depth, settings) {
       value.inspect !== inspect &&
       // Also filter out any prototype objects using the circular check.
       !(value.constructor && value.constructor.prototype === value)) {
-    return value.inspect(depth);
+    return value.inspect(depth, settings.showHidden, settings.colors);
   }
 
   var base = '';

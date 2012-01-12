@@ -82,6 +82,7 @@ Context.prototype = {
   },
 
   syntaxCheck: function syntaxCheck(src){
+    var result;
     src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
     if ((result = parsify(src)) === true) return src;
     src += ';';

@@ -62,9 +62,7 @@ function UltraRLI(stream, completer){
 
 UltraRLI.prototype = {
   __proto__: Object.create(RLI.prototype),
-
   constructor: UltraRLI,
-
 
   resize: function resize(size){
     size || (size = this.output.getWindowSize());

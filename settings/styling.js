@@ -64,7 +64,6 @@ var styling = function(){
     },
   };
 }
-//‡ †
 
 
 

@@ -14,14 +14,14 @@ module.exports = [
     help: 'Create a context that runs code using SpiderMonkey.',
     defaultTrigger: { type: 'command', trigger: '.sm' },
     action: function(){
-	    var result = this.context.add(new SpiderMonkeyContext);
-	    if (isError(result)) {
-	      result = result.message.color(style.error);
-	    } else {
-	      result = 'created SpiderMonkeyContext '.color(style.context.create) + result.name;
-	    }
-	    this.rli.timedWrite('topright', result, 'bgbblack');
-	    this.refresh();
+      var result = this.context.add(new SpiderMonkeyContext);
+      if (isError(result)) {
+        result = result.message.color(style.error);
+      } else {
+        result = 'created SpiderMonkey Context '.color(style.context.create) + result.name;
+      }
+      this.rli.timedWrite('topright', result, 'bgbblack');
+      this.refresh();
     }
   }
 ];
@@ -33,14 +33,17 @@ var SpiderMonkeyContext = heritable({
   },
   super: Context,
   runCode: function runCode(code, filename, finalize){
-  		this.spidermonkey.stdout.once('data', function(data){
-  			finalize({
-  				 status: 'success',
-  				 result: data.toString('utf8'),
-  				 code: code
-  			});
-		});
-  		this.spidermonkey.stdin.write(code + '\n');
-  		return 'async';
+    this.protos = false;
+    this.spidermonkey.stdout.once('data', function(data){
+      data = data.toString('utf8').replace(/\r?\njs> $/, '');
+      try { data = eval(data.replace(/\[native code\]/g, '')) } catch (e) { }
+      finalize({
+         status: 'success',
+         result: data,
+         code: code
+      });
+    });
+    this.spidermonkey.stdin.write(code + '\n');
+    return 'async';
   }
 });

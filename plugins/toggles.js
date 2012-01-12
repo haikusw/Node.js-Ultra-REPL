@@ -63,12 +63,13 @@ module.exports = [
       depth = parseInt(depth, 10);
       if (depth === this.context.depth || !(depth > 0)) {
         this.timedPrompt('depth ' + this.context.depth, style.prompt['--']);
-        return this.rli.clearInput();
+        this.rli.clearInput();
+      } else {
+        depth = depth > 1 ? depth : 1;
+        this.timedPrompt('depth ' + depth, style.prompt[this.context.depth > depth ? '--' : '++']);
+        this.context.depth = depth;
+        this.refresh();
       }
-      depth = depth > 1 ? depth : 1;
-      this.timedPrompt('depth ' + depth, style.prompt[this.context.depth > depth ? '--' : '++']);
-      this.context.depth = depth;
-      this.refresh();
     }
   },
 ]

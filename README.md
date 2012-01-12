@@ -50,11 +50,7 @@ There are some things that are (currently) shared between contexts. Required mod
 
 Everything else is unique per context: native objects and any code you run yourself. It is generally possible to put objects on multiple contexts but there are some things that don't work, like trying to run Object.* functions from one context on objects in another one. The settings for depth, hiddens, builtins, and colors are also specific to each context.
 
-![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss5.png)
-
 You can make and use as many contexts as you want.
-
-![no builtins](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
 
 
 ## In Progress

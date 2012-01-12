@@ -10,12 +10,12 @@ var REPLServer = repl.REPLServer;
 require('../lib/string-utils').attachTo(String.prototype);
 var Dict = require('../lib/Dict');
 var Results = require('../lib/PageSet');
+var Commander = require('./Commander');
 var UltraRLI = require('./UltraRLI');
 var Evaluator = require('./Evaluator');
 
 var fixEmitKey = require('../lib/fixEmitKey');
 
-var commands = require('./commands');
 
 var style = require('../settings/styling');
 var builtins = require('../lib/builtins');
@@ -57,7 +57,6 @@ function UltraREPL(options){
   var rli = new UltraRLI(stream, complete);
 
   Object.defineProperties(this, {
-    help: hidden([]),
     input: hidden(stream.input),
     output: hidden(stream.output),
     rli: hidden(rli),
@@ -66,9 +65,12 @@ function UltraREPL(options){
 
   rli.on('close', stream.input.destroy.bind(stream.input));
   rli.on('resize', this.refresh.bind(this));
+  rli.on('keybind', function(key){
+    this.keydisplay && rli.timedWrite('topright', key.bind, style.info.keydisplay);
+  }.bind(this));
   rli.on('line', function(cmd){
     cmd = cmd.trim();
-    if (!cmd || this.keyword(cmd) !== false) return;
+    if (!cmd || this.commands.keyword(cmd)) return;
 
     this.buffered.push(cmd);
     this.rli.clearInput();
@@ -93,20 +95,26 @@ function UltraREPL(options){
     function finalize(evaled){
       finalize.errored = false;
       clearTimeout(finalize.syntax);
-      this.context._ = evaled.result;
-      this.inspector();
+      this.inspector(evaled.result);
       this.resetInput();
     }
   }.bind(this));
 
-  commands(this);
+  this.commands = new Commander(rli);
+
+  var handler = function(action, cmd, params){
+    var result = action.call(this, cmd, params);
+    typeof result !== 'undefined' && this.inspector(result);
+  }.bind(this);
+
+  this.commands.on('keybind', handler);
+  this.commands.on('keyword', handler);
+
   this.context.columns = this.width - 10;
   this.pages = (new Results).bisect(this.height - 2);
   this.updatePrompt();
   this.loadScreen();
 }
-
-
 
 
 UltraREPL.prototype = {
@@ -125,7 +133,7 @@ UltraREPL.prototype = {
     });
 
     var seehelp = [ 'press'.color(style.help.intro),
-                    this.help[0].trigger.color(style.help[this.help[0].type]),
+                    this.commands.help[0].trigger.color(style.help[this.commands.help[0].type]),
                     'to see command list'.color(style.help.intro) ].join(' ');
 
     seehelp = ' '.repeat((intro[0].alength - seehelp.alength) / 2 | 0) + seehelp;
@@ -133,25 +141,6 @@ UltraREPL.prototype = {
 
     this.rli.writeFrom(intro, (this.width - intro[0].alength) / 2 | 0, (this.height - 2 - intro.length) / 2 | 0);
     this.header();
-  },
-
-  keyword: function keyword(cmd){
-    if (this.commands.has(cmd)) {
-      var result = this.commands[cmd].call(this, cmd, cmd) || true;
-    } else {
-      var m = cmd.match(/^([^\s]+)\s+(.*)$/);
-      if (m !== null && this.commands[m[1]]) {
-        var result = this.commands[m[1]].call(this, m[1], m[2]) || true;
-      }
-    }
-    if (result) {
-      if (Object(result) === result)  {
-        this.context._ = result;
-        this.inspector();
-      }
-      return result;
-    }
-    return false;
   },
 
   resetInput: function resetInput(){
@@ -175,7 +164,7 @@ UltraREPL.prototype = {
   showHelp: function showHelp(info){
     this.rli.clearScreen();
     this.header();
-    this.rli.writeFrom(this.generateHelp(info || this.help, this.width));
+    this.rli.writeFrom(this.generateHelp(info || this.commands.help, this.width));
     this.resetInput();
   },
 
@@ -203,17 +192,20 @@ UltraREPL.prototype = {
   },
 
   refresh: function refresh(){
-    //this.context._ = this.context.ctx;
     this.inspector();
     this.updatePrompt();
   },
 
   inspector: function inspector(obj){
-    var output = this.context._;
-    if (typeof obj === 'string') {
-      output = obj;
-    } else if (typeof obj === 'object') {
-      output = this.context._ = obj;
+    if (obj) {
+      if (typeof obj === 'string') {
+        var output = obj;
+      } else {
+        this.context._ = obj;
+        var output = this.context._;
+      }
+    } else {
+      var output = this.context._;
     }
 
     var results = new Results(output);
@@ -241,34 +233,34 @@ UltraREPL.prototype = {
     clearTimeout(this.timer);
     this.timer = setTimeout(this.updatePrompt.bind(this), time || 5000);
   },
-  generateHelp: generateHelp
+  generateHelp: function generateHelp(help, screenW){
+    var nameW = widest(help, 'name') + 2;
+    var triggerW = widest(help, 'trigger') + 2;
+    var helpL = nameW + triggerW + 2;
+    var helpR = screenW - nameW - triggerW - 8;
+    var last = 0;
+    return help.filter(function(cmd){ return cmd.help }).map(function(cmd){
+      var output = {
+        help: cmd.help.color((last ^= 1) ? 'bwhite' : 'bblack'),
+        type: cmd.type,
+        trigger: cmd.trigger || '',
+        name: cmd.name
+      };
+
+      if (output.type === 'keywords') {
+        output.help += '\n' + chunk(', ', helpR, helpL + 2, output.trigger).color(style.help.keywords);
+        output.trigger = '';
+      } else {
+        output.help = output.help.align(helpR, helpL);
+      }
+      return '  ' + output.name.pad(nameW).color(style.help.names) +
+             output.trigger.pad(triggerW).color(style.help[output.type]) +
+             output.help;
+
+    });
+  }
 };
 
-function generateHelp(help, screenW){
-  var nameW = widest(help, 'name') + 2;
-  var triggerW = widest(help, 'trigger') + 2;
-  var helpL = nameW + triggerW + 2;
-  var helpR = screenW - nameW - triggerW - 8;
-  var last = 0;
-  return help.filter(function(cmd){ return cmd.help }).map(function(cmd){
-    var output = {
-      help: cmd.help.color((last ^= 1) ? 'bwhite' : 'bblack'),
-      type: cmd.type,
-      trigger: cmd.trigger || '',
-      name: cmd.name
-    };
 
-    if (output.type === 'keywords') {
-      output.help += '\n' + chunk(', ', helpR, helpL + 2, output.trigger).color(style.help.keywords);
-      output.trigger = '';
-    } else {
-      output.help = output.help.align(helpR, helpL);
-    }
-    return '  ' + output.name.pad(nameW).color(style.help.names) +
-           output.trigger.pad(triggerW).color(style.help[output.type]) +
-           output.help;
-
-  });
-}
 
 function hidden(v){ return { value: v, configurable: true, writable: true, enumerable: false } };

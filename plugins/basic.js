@@ -11,7 +11,7 @@ module.exports = [
     help: 'Dynamically load an UltraREPL plugin.',
     defaultTrigger: { type: 'command', trigger: '.plugin' },
     action: function(cmd, name){
-      this.showHelp(this.loadPlugin(name));
+      this.showHelp(this.commands.loadPlugin(name));
     }
   },
   { name: 'Auto-Includer',

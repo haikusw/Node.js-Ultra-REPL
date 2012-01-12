@@ -26,10 +26,9 @@ module.exports = [{
       source = target;                                                 // hope that the code itself was passed
     }
     try {
-      this.context._ = this.context.ctx.ast = esprima.parse(source).body;
+      return this.context.ctx.ast = esprima.parse(source).body;
     } catch (e) {
-      this.context._ = e;
+      return e;
     }
-    this.inspector();
   }
 }];

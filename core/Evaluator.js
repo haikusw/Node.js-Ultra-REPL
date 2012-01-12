@@ -113,7 +113,7 @@ Evaluator.prototype = {
     return this.current.initialize();
   },
 
-  evaluate: function evaluate(code){
+  evaluate: function evaluate(code, finalize){
     var output = {
       status: 'success',
       code: code.trim(),
@@ -125,8 +125,11 @@ Evaluator.prototype = {
     } else {
       output.code = output.result;
       try {
-        output.result = this.current.runCode(output.code);
+        output.result = this.current.runCode(output.code, this.name, finalize);
         output.status = 'success';
+        if (output.result !== 'async') {
+          finalize(output)
+        }
       } catch (e) {
         output.result = e;
         output.status = 'error';

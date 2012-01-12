@@ -79,7 +79,7 @@ function UltraREPL(options){
 
     function run(){
       if (!this.buffered.length) return this.updatePrompt();
-      var evaled = context.evaluate(this.buffered.join('\n'));
+      var evaled = context.evaluate(this.buffered.join('\n'), finalize.bind(this));
       if (evaled.status === 'syntax_error') {
         if (!finalize.errored) {
           this.timedPrompt(evaled.result.name);
@@ -89,7 +89,6 @@ function UltraREPL(options){
         finalize.syntax = setTimeout(finalize.bind(this, evaled), 500);
         return this.updatePrompt();
       }
-      finalize.call(this, evaled);
     }
 
     function finalize(evaled){

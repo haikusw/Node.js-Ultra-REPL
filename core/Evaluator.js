@@ -1,9 +1,12 @@
 var util = require('util');
 var path = require('path');
 var EventEmitter = require('events').EventEmitter;
+var vm = require('vm');
 
 var Iterable = require('../lib/Iterable').Iterable;
 var Context = require('./Context');
+
+var slice = Function.prototype.call.bind(Array.prototype.slice);
 
 module.exports = Evaluator;
 
@@ -15,6 +18,30 @@ function Evaluator(){
   this.contexts.add('global', this.current);
   var self = this;
   Object.defineProperty(this.current, 'columns', { get: function(){ return self.columns } });
+
+  vm.runInThisContext = function(context, ritc){
+    return function __runInThisContext(){
+      if (context.ctx === global) {
+        return ritc.apply(this, arguments);
+      } else {
+        var args = slice(arguments);
+        args.splice(1, 1, context.ctx);
+        return vm.runInContext.apply(this, args);
+      }
+    }
+  }(this, vm.runInThisContext);
+
+  vm.Script.prototype.runInThisContext = function(context, ritc){
+    return function __runInThisContext(){
+      if (context.ctx === global) {
+        return ritc.apply(this, arguments);
+      } else {
+        var args = slice(arguments);
+        args.splice(1, 1, context.ctx);
+        return vm.runInContext.apply(this, args);
+      }
+    }
+  }(this, vm.Script.prototype.runInThisContext);
 }
 
 
@@ -108,4 +135,3 @@ Evaluator.prototype = {
     return output;
   }
 };
-

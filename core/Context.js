@@ -17,6 +17,9 @@ var inspector = loader.loadScript(path.resolve(__dirname, 'inspect.js'));
 var contexts = new WeakMap;
 var scripts = new WeakMap;
 
+var runInThisContext = vm.runInThisContext;
+
+
 module.exports = Context;
 
 function Context(isGlobal){
@@ -177,7 +180,7 @@ function UUID(seed){
 
 function run(code, ctx, name){
   if (ctx === global) {
-    return vm.runInThisContext(code, name || 'global');
+    return runInThisContext(code, name || 'global');
   } else {
     return vm.runInContext(code, ctx, name);
   }

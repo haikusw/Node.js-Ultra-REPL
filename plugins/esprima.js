@@ -10,8 +10,8 @@ module.exports = [{
 
   action: function(cmd, target){
     // search executed code history first
-    var source = this.context.current.scripts.filter(function(script){
-      return ~script.globals.indexOf(target);
+    var source = this.context.current.history.filter(function(history){
+      return ~history.globals.indexOf(target);
     }, []);
 
     if (source.length){

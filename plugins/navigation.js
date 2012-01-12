@@ -3,18 +3,20 @@ module.exports = [
     help: 'Next page of results.',
     defaultTrigger: { type: 'keybind', trigger: 'pgdn' },
     action: function(){
-      if (this.pages.count() === 0) return;
-      this.rli.writePage(this.pages.next());
-      this.header();
+      if (this.pages.count() > 0) {
+        this.rli.writePage(this.pages.next());
+        this.header();
+      }
     }
   },
   { name: 'Previous Page',
     help: 'Previous page of results.\n',
     defaultTrigger: { type: 'keybind', trigger: 'pgup' },
     action: function(){
-      if (this.pages.count() === 0) return;
-      this.rli.writePage(this.pages.previous());
-      this.header();
+      if (this.pages.count() > 0) {
+        this.rli.writePage(this.pages.previous());
+        this.header();
+      }
     }
   },
   { name: 'Delete Left',

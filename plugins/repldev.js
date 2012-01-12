@@ -18,8 +18,7 @@ module.exports = [
     help: 'Adds a reference to the live repl object to the current context.',
     defaultTrigger: { type: 'keybind', trigger: 'f12' },
     action: function(){
-      this.context._ = this.context.ctx.repl = this;
-      this.inspector();
+      return this.context.ctx.repl = this;
     }
   },
   { name: 'Toggle Key Display',

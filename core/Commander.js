@@ -32,7 +32,7 @@ module.exports = heritable({
       }
 
       if (control.type === 'keybind' && process.platform === 'darwin') {
-        control && control.trigger = control.trigger.replace('ctrl+', 'command+');
+        control && (control.trigger = control.trigger.replace('ctrl+', 'command+'));
       }
 
       return {

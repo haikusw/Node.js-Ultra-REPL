@@ -94,7 +94,21 @@ function UltraREPL(options){
     function finalize(evaled){
       finalize.errored = false;
       clearTimeout(finalize.syntax);
-      this.inspector(evaled.result);
+      var output = [];
+      if (evaled.result.completion) {
+        this.context._ = evaled.result.completion;
+        output.push(' Result'.pad(this.width).color('bgblue'), this.context._);
+      }
+      if (evaled.result.completion) {
+        this.context._ = evaled.result.globals;
+        output.push(' New Globals'.pad(this.width).color('bgblue'), this.context._);
+      }
+      if (!output.length) {
+        this.context._ = evaled.result;
+        output.push(this.context._);
+      }
+
+      this.inspector(output.join('\n'));
       this.resetInput();
     }
   }.bind(this));

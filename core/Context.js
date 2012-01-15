@@ -20,6 +20,7 @@ var scripts = new WeakMap;
 var runInThisContext = vm.runInThisContext;
 
 
+
 module.exports = Context;
 
 function Context(isGlobal){
@@ -78,7 +79,7 @@ Context.prototype = {
   },
 
   globals: function globals(){
-    return run('Object.getOwnPropertyNames(this)', this.ctx);
+    return run('(function(g){return Object.getOwnPropertyNames(g).reduce(function(r,s){if(s!=="_")r[s]=g[s];return r},{})})(this)', this.ctx);
   },
 
   syntaxCheck: function syntaxCheck(src){
@@ -96,20 +97,28 @@ Context.prototype = {
     scripts.get(this).push(script);
     var globals = this.globals();
     var result = script.runInContext(this.ctx).result;
-    script.globals = this.globals().filter(function(s){ return !~globals.indexOf(s) });
-    var ctx = this.ctx;
-    globals = script.globals.reduce(function(r, s){
-      r[s] = ctx[s];
-      if (ctx[s] === result) result = r;
-      return r;
-    }, run('({})', this.ctx));
-    if (typeof result === 'undefined' && script.globals.length) {
-      result = globals;
+    globals = diffObject(this.globals(), globals);
+    script.globals = Object.keys(globals);
+    if (script.globals.length) {
+      if (!inObject(globals, result)) {
+        result = {
+          completion: result,
+          globals: globals
+        };
+      } else {
+        result = {
+          globals: globals
+        };
+      }
+    } else {
+      result = {
+        completion: result
+      }
     }
     this.history.push({
       code: script.code,
-      result: result,//get result(){  return result },
-      globals: globals//get globals(){ return result }
+      result: result,
+      globals: script.globals
     });
     return result;
   },
@@ -171,6 +180,32 @@ Context.prototype = {
     });
   },
 };
+
+function inArray(arr, val){
+  return arr.some(function(s){ return egal(arr[s], val) });
+}
+
+function diffArray(arr, diff){
+  return arr.filter(function(s){ return !inArray(diff, s) });
+}
+
+function diffObject(obj, diff){
+  return Object.getOwnPropertyNames(obj).reduce(function(r,s){
+    if (!inObject(diff, obj[s])) {
+      r[s] = obj[s];
+    }
+    return r;
+  }, {});
+}
+
+function inObject(obj, val){
+  return Object.getOwnPropertyNames(obj).some(function(s){ return egal(obj[s], val) });
+}
+
+
+function egal(a, b){
+  return a === b ? a !== 0 || 1 / a === 1 / b : a !== a && b !== b;
+}
 
 
 function UUID(seed){

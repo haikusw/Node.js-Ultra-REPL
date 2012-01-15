@@ -1,0 +1,6 @@
+[submodule "node_modules/context-loader"]
+	path = node_modules/context-loader
+	url = git://github.com/Benvie/Context-Loader.git
+[submodule "node_modules/harmony-collections"]
+	path = node_modules/harmony-collections
+	url = git://github.com/Benvie/ES6-Harmony-Collections-Shim.git

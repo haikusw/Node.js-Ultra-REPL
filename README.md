@@ -59,6 +59,8 @@ Evaluation results which are functions with readable source will be returned as 
 
 ![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
 
+![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss8.png)
+
 ## Misc
 
 New Global detection.

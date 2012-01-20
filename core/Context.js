@@ -33,7 +33,8 @@ function Context(isGlobal){
     if (module.globalConfigured) return global;
     module.globalConfigured = true;
 
-    this.global = this.ctx = global;
+    this.ctx = global;
+    Object.defineProperty(this, 'global', { value: run('this', this.ctx) });
 
     Object.defineProperties(global, {
       module:   { value: module },
@@ -60,7 +61,7 @@ Context.prototype = {
     // initialize context
     this.ctx = vm.createContext();
     // the wrapper Context object is different from the actual global
-    this.global = run('this', this.ctx);
+    Object.defineProperty(this, 'global', { value: run('this', this.ctx) });
 
     // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
     'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
@@ -83,9 +84,9 @@ Context.prototype = {
   },
 
   syntaxCheck: function syntaxCheck(src){
-    var result;
     src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
-    if ((result = parsify(src)) === true) return src;
+    var result = parsify(src);
+    if (result === true) return src;
     src += ';';
     if (parsify(src) === true) return src;
     src = '( ' + src + '\n)';
@@ -113,7 +114,7 @@ Context.prototype = {
     } else {
       result = {
         completion: result
-      }
+      };
     }
     this.history.push({
       code: script.code,
@@ -124,19 +125,15 @@ Context.prototype = {
   },
 
   runCode: function runCode(code, filename){
-    var script = loader.wrap(code, filename);
-    return this.runScript(script);
+    return this.runScript(loader.wrap(code, filename));
   },
 
   runFile: function runFile(filename){
-    var script = loader.loadScript(filename);
-    if (script) {
-      return this.runScript(script);
-    }
+    return this.runScript(loader.loadScript(filename));
   },
 
   clone: function clone(){
-    var context = new Context;
+    var context = new (Object.getPrototypeOf(this).constructor);
     context.builtins = this.builtins;
     context.hiddens = this.hiddens;
     context.colors = this.colors;

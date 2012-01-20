@@ -84,10 +84,11 @@ function inspect(obj, options, styling) {
     colors: !!options.colors,
     style: options.colors ? color : noColor,
     sort: options.sort,
+    depth: options.depth,
     seen: []
   };
 
-  styles = styling;
+  styles = styling || styles;
 
   // cache formatted brackets
   settings.square = [
@@ -190,10 +191,8 @@ function noColor(str, style, special) {
   return special ? '\u00AB' + str + '\u00BB' : str;
 }
 
-var builtins = [ Object, Function, Array, String, Boolean, Number, Date, RegExp,
-                 Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError
-               ].map(function(s){ return s.prototype });
-
+var builtins = [ 'Object', 'Function', 'Array', 'String', 'Boolean', 'Number', 'Date', 'RegExp', 'Null',
+                 'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError' ];
 var numeric = /^\d+$/;
 var q = ['"', "'"];
 var qMatch = [/(')/g, /(")/g];
@@ -215,7 +214,9 @@ function formatValue(value, key, depth, settings) {
       value.inspect !== inspect &&
       // Also filter out any prototype objects using the circular check.
       !(value.constructor && value.constructor.prototype === value)) {
-    return value.inspect(depth, settings.showHidden, settings.colors);
+    return value.inspect(function(obj){
+      return formatValue(obj, '', depth, settings);
+    });
   }
 
   var base = '';
@@ -276,7 +277,7 @@ function formatValue(value, key, depth, settings) {
 
   if (settings.showProtos && value !== global) {
     var proto = Object.getPrototypeOf(value);
-    if (!~builtins.indexOf(proto)) {
+    if (proto && proto.constructor && !~builtins.indexOf(proto.constructor.name)) {
       properties.push('__proto__');
     }
   }

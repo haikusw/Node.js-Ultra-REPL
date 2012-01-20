@@ -59,6 +59,12 @@ Evaluation results which are functions with readable source will be returned as 
 
 ![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
 
+## Misc
+
+New Global detection.
+
+![New Globals](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss7.png)
+
 ## In Progress
 
 * GUI-like interface with collapsable object views

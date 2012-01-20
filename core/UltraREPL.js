@@ -252,6 +252,7 @@ UltraREPL.prototype = {
 
     var results = new Results(output);
     this.pages = results.bisect(this.height - 2);
+    this.pageLabel();
     this.rli.writePage(this.pages.get(0));
     this.resetInput();
   },

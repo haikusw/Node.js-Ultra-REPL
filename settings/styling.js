@@ -4,24 +4,26 @@ var styling = function(){
     success: green2,
 
     inspector: {
+      header      : bg_blue1,
+
       // falsey
       Undefined   : black2,
       Null        : black2,
       // constructor functions
-      Constructor : yellow2,
+      Constructor : cyan2,
       Proto       : red2,
       // normal types
-      Function    : magenta2,
-      Boolean     : yellow2,
+      Function    : cyan1,
+      Boolean     : magenta1,
       Date        : red2,
       Error       : red2,
-      Number      : yellow1,
+      Number      : magenta2,
       RegExp      : red2,
       // property names and strings
       HString     : green1,
       String      : green2,
-      HConstant   : cyan1,
-      Constant    : cyan2,
+      HConstant   : yellow1,
+      Constant    : yellow2,
       HName       : black2,
       Name        : white2,
       // meta-labels

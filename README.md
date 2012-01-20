@@ -53,6 +53,12 @@ Everything else is unique per context: native objects and any code you run yours
 You can make and use as many contexts as you want.
 
 
+## Syntax Highlighting
+
+Evaluation results which are functions with readable source will be returned as syntax hightlighted code, utilizing aspects of CodeMirror2 along with modifications to work in the console.
+
+![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
+
 ## In Progress
 
 * GUI-like interface with collapsable object views

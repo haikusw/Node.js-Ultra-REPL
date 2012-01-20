@@ -32,6 +32,28 @@ var styling = function(){
       Square      : white1,
       Curly       : white1
     },
+    syntax: {
+      curly:       red1,
+      square:      blue2,
+      round:       blue1,
+      punctuation: white1,
+      string:      green2,
+      number:      green2,
+      property:    green1,
+      def:         cyan1,
+      variable:    cyan2,
+      variable2:   yellow2,
+      comment:     black2,
+      operator:    red2,
+      conditional: magenta1,
+      loop:        magenta2,
+      scope:       red2,
+      trycatch:    red2,
+      declaration: red1,
+      control:     magenta2,
+      member:      magenta2,
+      atom:        green2
+    },
     help: {
       intro: green2,
       names: cyan1,

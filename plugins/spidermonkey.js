@@ -39,7 +39,7 @@ var SpiderMonkeyContext = heritable({
       try { data = eval(data.replace(/\[native code\]/g, '')) } catch (e) { }
       finalize({
          status: 'success',
-         result: data,
+         text: data,
          code: code
       });
     });

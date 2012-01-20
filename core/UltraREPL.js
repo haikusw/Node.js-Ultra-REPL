@@ -13,6 +13,7 @@ var Results = require('../lib/PageSet');
 var Commander = require('./Commander');
 var UltraRLI = require('./UltraRLI');
 var Evaluator = require('./Evaluator');
+var Highlighter = require('./Highlighter');
 
 var fixEmitKey = require('../lib/fixEmitKey');
 
@@ -86,7 +87,11 @@ function UltraREPL(options){
           finalize.errored = true;
         }
         clearTimeout(finalize.syntax);
-        finalize.syntax = setTimeout(finalize.bind(this, evaled), 500);
+        finalize.syntax = setTimeout(function(){
+          //evaled.stack = evaled.stack;
+          //var error =
+          finalize.call(this, { text: evaled.result.stack });
+        }.bind(this), 500);
         return this.updatePrompt();
       }
     }
@@ -94,21 +99,34 @@ function UltraREPL(options){
     function finalize(evaled){
       finalize.errored = false;
       clearTimeout(finalize.syntax);
-      var output = [];
-      if (evaled.result.completion) {
-        this.context._ = evaled.result.completion;
-        output.push(' Result'.pad(this.width).color('bgblue'), this.context._);
-      }
-      if (evaled.result.completion) {
-        this.context._ = evaled.result.globals;
-        output.push(' New Globals'.pad(this.width).color('bgblue'), this.context._);
-      }
-      if (!output.length) {
-        this.context._ = evaled.result;
-        output.push(this.context._);
+      if (evaled.text) {
+        this.inspector(evaled.text);
+      } else {
+        var output = [];
+        if (evaled.result.completion) {
+          if (typeof evaled.result.completion === 'string') {
+            output.push(' Text'.pad(this.width).color('bgblue'));
+            output.push(evaled.result.completion.color('bgreen'));
+          } else if (typeof evaled.result.completion === 'function') {
+            output.push(' Function Source'.pad(this.width).color('bgblue'));
+            output.push(highlight(evaled.result.completion));
+          } else {
+            output.push(' Result'.pad(this.width).color('bgblue'));
+            this.context._ = evaled.result.completion;
+            output.push(this.context._);
+          }
+        }
+        if (evaled.result.globals) {
+          this.context._ = evaled.result.globals;
+          output.push(' New Globals'.pad(this.width).color('bgblue'), this.context._);
+        }
+        if (!output.length) {
+          this.context._ = evaled.result;
+          output.push(this.context._);
+        }
+        this.inspector(output.join('\n'));
       }
 
-      this.inspector(output.join('\n'));
       this.resetInput();
     }
   }.bind(this));
@@ -274,6 +292,24 @@ UltraREPL.prototype = {
   }
 };
 
+
+function highlight(fn){
+  if (typeof fn !== 'function') {
+    throw new TypeError('Highlighter needs a function');
+  }
+  var out = [];
+  Highlighter.highlight(fn+'', function(event, val, type){
+    if (event === 'line') {
+      out.push('\n');
+    } else if (event === 'token') {
+      if (style && val) {
+        val = val.color(style.syntax[type]);
+      }
+      out.push(val);
+    }
+  });
+  return out.join('');
+}
 
 
 function hidden(v){ return { value: v, configurable: true, writable: true, enumerable: false } };

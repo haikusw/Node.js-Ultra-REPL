@@ -110,7 +110,7 @@ function UltraREPL(options){
           } else {
             this.context._ = content;
             output.push(' Result'.pad(this.width).color(style.inspector.header), this.context._);
-            if (typeof content === 'function') {
+            if (typeof content === 'function' && (content+'').slice(-17) !== '{ [native code] }') {
               output.push(' Function Source'.pad(this.width).color(style.inspector.header), highlight(content));
             }
           }

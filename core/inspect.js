@@ -100,7 +100,11 @@ function inspect(obj, options, styling) {
     settings.style('}',  'Curly')
   ];
 
-  return formatValue(obj, '', options.depth || 2, settings);
+  try {
+    return formatValue(obj, '', options.depth || 2, settings);
+  } catch (e) {
+    return formatValue(e, '', options.depth || 2, settings);
+  }
 }
 
 // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
@@ -147,7 +151,8 @@ var errorToString = callbind(Error.prototype.toString);
 
 // formatter for functions shared with constructor formatter
 function functionLabel(fn, type) {
-  return '[' + type + (fn.name ? ': ' + fn.name : '') + ']';
+
+  return '[' + (isNative(fn) ? 'Native ' : '') + type + (fn.name ? ': ' + fn.name : '') + ']';
 }
 var noop = function(){}
 
@@ -237,7 +242,7 @@ function formatValue(value, key, depth, settings) {
     if (type === 'String') {
       var max = settings.maxWidth - key.alength - depth * 2 - 20
       if (base.alength > max) {
-        base = base.stripAnsi()
+        base = base.stripAnsi();
         base = settings.style(base.slice(0, max) + '...' + base[0], 'String');
       }
     }
@@ -458,6 +463,12 @@ function isConstructor(o){
          Object.getOwnPropertyNames(o.prototype).length >
          ('constructor' in o.prototype);
 }
+
+function isNative(o){
+  return typeof o === 'function' &&
+         Function.prototype.toString.call(o).slice(-17) === '{ [native code] }';
+}
+
 
 
 function filter(obj, arr, include){

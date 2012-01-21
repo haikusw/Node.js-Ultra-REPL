@@ -106,28 +106,19 @@ function UltraREPL(options){
         if (content = evaled.result.completion) {
 
           if (typeof content === 'string') {
-
-            header = 'Text';
-            content = content.color(style.inspector.String);
-
-          } else if (typeof content === 'function') {
-
-            header = 'Function Source';
-            content = highlight(content);
-
+            output.push(' Text'.pad(this.width).color(style.inspector.header), content.color(style.inspector.String));
           } else {
-
-            header = 'Result';
             this.context._ = content;
-            content = this.context._;
-
+            output.push(' Result'.pad(this.width).color(style.inspector.header), this.context._);
+            if (typeof content === 'function') {
+              output.push(' Function Source'.pad(this.width).color(style.inspector.header), highlight(content));
+            }
           }
-          output.push(header.pad(this.width).color(style.inspector.header), content);
         }
 
         if (content = evaled.result.globals) {
           this.context._ = content;
-          output.push('New Globals'.pad(this.width).color(style.inspector.header), this.context._);
+          output.push(' New Globals'.pad(this.width).color(style.inspector.header), this.context._);
         }
 
         if (!output.length) {
@@ -135,7 +126,7 @@ function UltraREPL(options){
           output.push(this.context._);
         }
 
-        this.inspector(output.join('\n'));
+        this.inspector(output.join('\n\n'));
       }
 
       this.resetInput();
@@ -152,7 +143,7 @@ function UltraREPL(options){
   this.commands.on('keybind', handler);
   this.commands.on('keyword', handler);
 
-  this.context.columns = this.width - 10;
+  this.context.columns = this.width - 30;
   this.pages = (new Results).bisect(this.height - 2);
   this.updatePrompt();
   this.loadScreen();

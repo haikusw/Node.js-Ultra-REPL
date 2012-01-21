@@ -37,12 +37,14 @@ function widest(arr, field){
 
 function desc(val){ return { enumerable: false, configurable: true, writable: true, value: val } }
 
+var ansimatch = /\033\[(?:\d+;)*\d+m/g;
+
 Object.defineProperties(String.prototype, {
   alength: { get: function getter(){
-    return this.replace(/\033\[(?:[12]2?;)?\d\dm/g, '').length;
+    return this.replace(ansimatch, '').length;
   }, enumerable: false },
   stripAnsi: desc(function stripAnsi(){
-    return this.replace(/\033\[(?:[12]2?;)?\d\dm/g, '');
+    return this.replace(ansimatch, '');
   }),
   pad: desc(function pad(w){
     return this + ' '.repeat(w - this.alength);

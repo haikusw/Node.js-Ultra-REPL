@@ -71,8 +71,7 @@ function UltraREPL(options){
     this.keydisplay && rli.timedWrite('topright', key.bind, style.info.keydisplay);
   }.bind(this));
   rli.on('line', function(cmd){
-    cmd = cmd.trim();
-    if (!cmd || this.commands.keyword(cmd)) return;
+    if (!cmd || this.commands.keyword(cmd.trim())) return;
 
     this.buffered.push(cmd);
     this.rli.clearInput();

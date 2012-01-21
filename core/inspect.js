@@ -105,7 +105,7 @@ function inspect(obj, options, styling) {
   try {
     return formatValue(obj, '', options.depth || 2, settings);
   } catch (e) {
-    return formatValue(e, '', options.depth || 2, settings);
+    return formatValue(e, '', options.depth || 2, settings) + '\n' + e.stack.split('\n').slice(1).join('\n');
   }
 }
 
@@ -135,14 +135,14 @@ var ansi = {
   bgmagenta   : [  '45',    '49'],
   bgcyan      : [  '46',    '49'],
   bgwhite     : [  '47',    '49'],
-  bgbblack    : ['1;40', '21;49'],
-  bgbred      : ['1;41', '21;49'],
-  bgbgreen    : ['1;42', '21;49'],
-  bgbyellow   : ['1;43', '21;49'],
-  bgbblue     : ['1;44', '21;49'],
-  bgbmagenta  : ['1;45', '21;49'],
-  bgbcyan     : ['1;46', '21;49'],
-  bgbwhite    : ['1;47', '21;49']
+  bgbblack    : [  '90', '25;49'],
+  bgbred      : [  '91', '25;49'],
+  bgbgreen    : [  '92', '25;49'],
+  bgbyellow   : [  '93', '25;49'],
+  bgbblue     : [  '94', '25;49'],
+  bgbmagenta  : [  '95', '25;49'],
+  bgbcyan     : [  '96', '25;49'],
+  bgbwhite    : [  '97', '25;49']
 };
 
 
@@ -289,6 +289,17 @@ function formatValue(value, key, depth, settings) {
   settings.seen.push(value);
 
   var output = [];
+
+  try {
+    if (Object.isFrozen(value)) {
+      output.push(color('Frozen', 'Proto', true));
+    } else if (Object.isSealed(value)) {
+      output.push(color('Sealed', 'Proto', true));
+    } else if (!Object.isExtensible(value)) {
+      output.push(color('Non-Extensible', 'Proto', true));
+    }
+  } catch (e) {}
+
 
   // iterate array indexes first
   if (array) {

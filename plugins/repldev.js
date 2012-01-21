@@ -33,22 +33,25 @@ module.exports = [
       this.rli.clearScreen();
       this.header();
 
-      var names = String.prototype.color.names;
-      var width = names.join('').length / 2;
-      var left = (this.width - width) / 2;
-      var top = this.height / 2 - 2;
+      var names = String.prototype.color.names.slice(0, String.prototype.color.names.length / 2);
 
-      names = [names.slice(0, names.length / 2), names.slice(names.length / 2 + 1)];
+      names.shift()
+      var width = names.join('  ').length;
 
-      this.output.cursorTo(left, top);
-      names[0].forEach(function(color){
-        this.output.write(color.color(color) + ' ');
+      var ansi = [];
+
+      ansi[0] = names.map(function(c){ return c.color(c) });
+      ansi[1] = names.map(function(c){ return c.color('bg'+c)});
+      // ansi[2] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color(c) });
+      // ansi[3] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color('bg'+c) });
+
+      this.output.cursorTo(((this.width - width) / 2) | 0, ((this.height - ansi.length) / 2) | 0);
+      ansi.forEach(function(s){
+        this.output.write(s.join('  '));
+        this.output.moveCursor(-width, 1);
       }, this);
 
-      this.output.cursorTo(left, top + 2);
-      names[1].forEach(function(color){
-        this.output.write(color.slice(2).color(color) + ' ')
-      }, this);
+      require('fs').writeFileSync('ansi.txt', ansi.join('\n'));
 
       this.displayPrompt();
     }

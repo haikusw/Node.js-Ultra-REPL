@@ -169,13 +169,7 @@ var formatters = {
   String      : quotes,
   Undefined   : String,
   Proto       : function(f){
-    var name = 'Unknown';
-    if (f === null) {
-      name = 'Null';
-    } else if (Object(f) === f && 'constructor' in f) {
-      name = f.constructor.name;
-    }
-    return '[Proto' + (name ? ': ' + name : '') + ']';
+    return '[[Proto' + ((Object(f) === f && 'constructor' in f && f.constructor.name.length) ? ': ' + f.constructor.name : '') + ']]';
   }
 };
 
@@ -198,6 +192,7 @@ function noColor(str, style, special) {
 
 var builtins = [ 'Object', 'Function', 'Array', 'String', 'Boolean', 'Number', 'Date', 'RegExp', 'Null',
                  'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError' ];
+var objProto = Object.getOwnPropertyNames(Object.prototype).join();
 var numeric = /^\d+$/;
 var q = ['"', "'"];
 var qMatch = [/(')/g, /(")/g];
@@ -226,9 +221,9 @@ function formatValue(value, key, depth, settings) {
 
   var base = '';
   var type = isConstructor(value) ? 'Constructor' : getClass(value);
-  if (key === '__proto__') {
-    type = 'Proto';
-  }
+  //if (key === '__proto__') {
+  //  type = 'Proto';
+  //}
   var array = isArray(value);
   var braces = array ? settings.square : settings.curly;
 
@@ -282,7 +277,9 @@ function formatValue(value, key, depth, settings) {
 
   if (settings.showProtos && value !== global) {
     var proto = Object.getPrototypeOf(value);
-    if (proto && proto.constructor && !~builtins.indexOf(proto.constructor.name)) {
+    var ctor = proto && proto.constructor && proto.constructor.name;
+    // don't list protos for built-ins
+    if (!~builtins.indexOf(ctor) || ctor === 'Object' && Object.getOwnPropertyNames(proto).join() !== objProto) {
       properties.push('__proto__');
     }
   }
@@ -391,6 +388,11 @@ function formatProperty(value, key, depth, settings, array) {
       // use different coloring otherwise
       nameFormat = 'H' + nameFormat;
     }
+  }
+
+  if (key === '__proto__') {
+    key = formatters.Proto(val.value);
+    nameFormat = 'Proto';
   }
 
   return settings.style(key, nameFormat) + ': ' + str;

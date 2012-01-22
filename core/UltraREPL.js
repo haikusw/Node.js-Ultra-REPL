@@ -5,7 +5,6 @@ var vm = require('vm');
 var path = require('path');
 var repl = require('repl');
 var fs = require('fs');
-var REPLServer = repl.REPLServer;
 
 require('../lib/string-utils').attachTo(String.prototype);
 var Dict = require('../lib/Dict');
@@ -31,6 +30,13 @@ module.exports.UltraREPL = UltraREPL;
 
 
 function UltraREPL(options){
+  // var log = fs.writeFileSync.bind(fs, path.resolve(__dirname, '..', 'error.log'));
+
+  // process.on('uncaughtException', function(err){
+  //   log(err.stack);
+  //   this.inspector(err.stack);
+  // }.bind(this));
+
   options = options || {};
   var context = this.context = new Evaluator;
   String.prototype.color.context = this.context;
@@ -55,7 +61,8 @@ function UltraREPL(options){
 
   fixEmitKey(stream.input);
 
-  var complete = this.complete.bind(this);
+  //var complete = this.complete.bind(this);
+  var complete = function(){}.bind(this);
   var rli = new UltraRLI(stream, complete);
 
   Object.defineProperties(this, {
@@ -150,7 +157,6 @@ function UltraREPL(options){
 
 
 UltraREPL.prototype = {
-  __proto__: Object.create(REPLServer.prototype),
   constructor: UltraREPL,
 
   get height(){ return this.rli.height },

@@ -41,7 +41,7 @@ module.exports = [
       var ansi = [];
 
       ansi[0] = names.map(function(c){ return c.color(c) });
-      ansi[1] = names.map(function(c){ return c.color('bg'+c)});
+      ansi[1] = names.map(function(c){ return c.color(['bg'+c,'bwhite'])});
       // ansi[2] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color(c) });
       // ansi[3] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color('bg'+c) });
 

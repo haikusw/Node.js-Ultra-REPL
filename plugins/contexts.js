@@ -5,7 +5,7 @@ var style = require('../settings/styling');
 
 
 function injectNodeBuiltins(){
-  this.context.ctx.global = this.context.ctx;
+  this.context.ctx.global = this.context.global;
   builtins.node.forEach(function(name){
     Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
   }, this);
@@ -21,7 +21,7 @@ function contexCommand(action){
       result = action.color(style.context[action]) + ' ' + result.name;
     }
     this.rli.timedWrite('topright', result, 'bgbblack');
-    this.context._ = this.context.ctx;
+    this.context._ = this.context.global;
     this.refresh();
   }
 }
@@ -53,7 +53,7 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+up' },
     action: function(){
       this.context.change(1);
-      this.context.ctx._ = this.context.ctx;
+      this.context.ctx._ = this.context.global;
       this.refresh();
     }
   },
@@ -62,7 +62,7 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+down' },
     action: function(){
       this.context.change(-1);
-      this.context.ctx._ = this.context.ctx;
+      this.context.ctx._ = this.context.global;
       this.refresh();
     }
   },

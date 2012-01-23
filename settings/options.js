@@ -11,6 +11,7 @@ module.exports = {
     'navigation',
     'toggles',
     'contexts',
-    'repldev'
+    'repldev',
+    'filesystem'
   ]
 }

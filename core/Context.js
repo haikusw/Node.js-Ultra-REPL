@@ -20,38 +20,50 @@ var scripts = new WeakMap;
 var runInThisContext = vm.runInThisContext;
 
 
-
 module.exports = Context;
 
 function Context(isGlobal){
-
   Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
 
-
+  this.initialize();
 
   if (isGlobal) {
-    if (module.globalConfigured) return global;
-    module.globalConfigured = true;
+    if (module.globalContext) return module.globalContext;
+    Object.defineProperty(module, 'globalContext', { value: this });
     this.isGlobal = true;
-    this.initialize();
 
-    Object.defineProperties(this.ctx, {
-      module:   { value: module },
-      require:  { value: require },
-      exports:  { get: function( ){ return module.exports; },
-                  set: function(v){ module.exports = v;    } }
-    });
+
+    function Module(id, parent) {
+      this.id = id;
+      this.exports = {};
+      this.parent = parent;
+      this.filename = path.resolve(__dirname, '..');
+      this.loaded = true;
+      this.exited = false;
+      this.children = [];
+    }
+    Module.prototype.constructor = function Module(){};
+
+    var mod = new Module('.', null);
+    var req = function(req){ return function require(path){ return req(path) } }(require);
 
     Object.getOwnPropertyNames(global).forEach(function(prop){
-      if (prop !== 'root' && prop !== 'GLOBAL' && !(prop in this)) {
+      if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this)) {
         Object.defineProperty(this, prop, Object.getOwnPropertyDescriptor(global, prop));
       }
     }, this.ctx);
 
+    Object.defineProperties(this.ctx, {
+      module:  { value: mod },
+      require: { value: req },
+      exports: { get: function( ){ return mod.exports; },
+                 set: function(v){ mod.exports = v;    } },
+      global:  { value: this.global, enumerable: true, writable: true, configurable: true },
+    });
+
     process.nextTick(function(){ this.name = newName() }.bind(this));
   } else {
     this.name = newName();
-    this.initialize();
   }
 }
 

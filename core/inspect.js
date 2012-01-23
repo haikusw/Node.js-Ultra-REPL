@@ -192,7 +192,7 @@ function noColor(str, style, special) {
   return special ? '\u00AB' + str + '\u00BB' : str;
 }
 
-var builtins = [ 'Object', 'Function', 'Array', 'String', 'Boolean', 'Number', 'Date', 'RegExp', 'Null',
+var builtins = [ 'Context', 'Object', 'Function', 'Array', 'String', 'Boolean', 'Number', 'Date', 'RegExp', 'Null',
                  'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError' ];
 var objProto = Object.getOwnPropertyNames(Object.prototype).join();
 var numeric = /^\d+$/;

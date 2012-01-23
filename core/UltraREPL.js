@@ -14,7 +14,7 @@ var UltraRLI = require('./UltraRLI');
 var Evaluator = require('./Evaluator');
 var Highlighter = require('./Highlighter');
 
-var fixEmitKey = require('../lib/fixEmitKey');
+var monkeypatch = require('../lib/monkeypatch');
 
 
 var style = require('../settings/styling');
@@ -30,14 +30,10 @@ module.exports.UltraREPL = UltraREPL;
 
 
 function UltraREPL(options){
-  // var log = fs.writeFileSync.bind(fs, path.resolve(__dirname, '..', 'error.log'));
-
-  // process.on('uncaughtException', function(err){
-  //   log(err.stack);
-  //   this.inspector(err.stack);
-  // }.bind(this));
-
   options = options || {};
+  options.stream = options.stream || process;
+
+  monkeypatch.typedArrays(global);
   var context = this.context = new Evaluator;
   String.prototype.color.context = this.context;
 
@@ -47,29 +43,20 @@ function UltraREPL(options){
   this.lines.level = [];
   this.keydisplay = false;
 
-  var stream;
-  if (options.stream) {
-    if (options.stream.stdin || options.stream.stdout) {
-      stream = { input: options.stream.stdin, output: options.stream.stdout };
-    } else {
-      stream = { input: options.stream, output: options.stream };
-    }
-  } else {
-    process.stdin.resume();
-    stream = { input: process.stdin, output: process.stdout };
-  }
+  var stream = {
+    input: options.stream.stdin || options.stream,
+    output: options.stream.stdout || options.stream,
+  };
 
-  fixEmitKey(stream.input);
+  monkeypatch.fixEmitKey(stream.input);
 
-  //var complete = this.complete.bind(this);
   var complete = function(){}.bind(this);
   var rli = new UltraRLI(stream, complete);
 
   Object.defineProperties(this, {
     input: hidden(stream.input),
     output: hidden(stream.output),
-    rli: hidden(rli),
-    timer: hidden(0)
+    rli: hidden(rli)
   });
 
   rli.on('close', stream.input.destroy.bind(stream.input));
@@ -190,12 +177,10 @@ UltraREPL.prototype = {
   resetScreen: function resetScreen(){
     this.rli.clearScreen();
     this.resetInput();
+    this.pageLabel();
   },
 
   displayPrompt: function displayPrompt(){
-    if (this.buffered.length) {
-      this.rli.setPrompt('...' + '..'.repeat(this.lines.level.length) + ' ');
-    }
     this.rli.clearInput();
   },
 
@@ -269,8 +254,8 @@ UltraREPL.prototype = {
   timedPrompt: function timedPrompt(message, color, time){
     this.messages = message.color(color);
     this.updatePrompt();
-    clearTimeout(this.timer);
-    this.timer = setTimeout(this.updatePrompt.bind(this), time || 5000);
+    timedPrompt.timer && clearTimeout(timedPrompt.timer);
+    timedPrompt.timer = setTimeout(this.updatePrompt.bind(this), time || 5000);
   },
   generateHelp: function generateHelp(help, screenW){
     var nameW = widest(help, 'name') + 2;

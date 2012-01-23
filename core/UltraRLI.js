@@ -1,40 +1,23 @@
 var RLI = require('readline').Interface;
-var util = require('util');
 var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 var tty = require('tty');
 
 
 require('../lib/string-utils').attachTo(String.prototype);
 
+
+
 module.exports = UltraRLI;
-
-
-var mounts = {
-  topright: {
-    x: 'right',
-    y: 'top',
-    align: 'right',
-    bg: 'bgcyan'
-  },
-  topcenter: {
-    x: 'center',
-    y: 'top',
-    align: 'center',
-    bg: 'bgcyan'
-  }
-};
-
 
 function UltraRLI(stream, completer){
   EventEmitter.call(this);
 
-  completer = completer || function() { return []; };
-
   var output = this.output = stream.output;
   var input = this.input = stream.input;
-
   input.resume();
 
+  completer = completer || function(){ return [] };
   this.completer = completer.length === 2 ? completer : function(v, callback){
     callback(null, completer(v));
   };
@@ -42,7 +25,6 @@ function UltraRLI(stream, completer){
   this.line = '';
   this.enabled = output.isTTY && !parseInt(process.env['NODE_NO_READLINE'], 10);
 
-  var self = this;
   if (!this.enabled) {
     input.on('data', function(){ self._normalWrite.apply(self, arguments) });
   } else {
@@ -65,7 +47,7 @@ UltraRLI.prototype = {
   constructor: UltraRLI,
 
   resize: function resize(size){
-    size || (size = this.output.getWindowSize());
+    size = size || this.output.getWindowSize();
     if (size[0] === resize.last[0] && size[1] === resize.last[1]) return;
     resize.last = size;
     this.width = size[0];
@@ -243,10 +225,8 @@ UltraRLI.prototype = {
   },
 
   _insertString: function _insertString(c){
-    if (this.cursor < this.line.length) {
-      var beg = this.line.slice(0, this.cursor);
-      var end = this.line.slice(this.cursor, this.line.length);
-      this.line = beg + c + end;
+    if (this.cursor < this.line.alength) {
+      this.line = this.line.slice(0, this.cursor) + c + this.line.slice(this.cursor, this.line.length);
       this.cursor += c.length;
       this.refreshLine();
     } else {
@@ -277,14 +257,14 @@ UltraRLI.prototype = {
   },
 
   _lineRight: function _lineRight(){
-    this.cursor = this.line.length;
-    this.output.moveCursor(this.line.length);
+    this.cursor = this.line.alength;
+    this.output.moveCursor(this.line.alength);
     this.refreshLine();
   },
 
   _deleteLeft: function _deleteLeft() {
     if (this.cursor && this.line.length) {
-      this.line = this.line.slice(0, this.cursor - 1) +  this.line.slice(this.cursor);
+      this.line = this.line.slice(0, this.cursor - 1) + this.line.slice(this.cursor);
       this.cursor--;
       this.refreshLine();
     }
@@ -297,44 +277,63 @@ UltraRLI.prototype = {
     }
   },
 
-  translate: (function(namemap, mods){
-    return function translate(val, key){
-      if (!key) key = {};
-      'ctrl' in key || (key.ctrl = false);
-      'meta' in key || (key.meta = false);
-      'shift' in key || (key.shift = false);
-      'name' in key || (key.name = val || '');
-      key.name in namemap && (key.name = namemap[key.name]);
-      'bind' in key || (key.bind = mods[key.ctrl | key.meta << 1 | key.shift << 2] + key.name);
-      return key;
-    }
-  })({ backspace: 'bksp',
-       escape:    'esc',
-       delete:    'del',
-       pagedown:  'pgdn',
-       pageup:    'pgup',
-       insert:     'ins' },
-     [ '', 'ctrl+', 'alt+', 'ctrl+alt+', 'shift+',
-        'ctrl+shift+', 'alt+shift+', 'ctrl+alt+shift+' ]),
+  translate: function translate(val, key){
+    key = key || {};
+    key.shift = !!key.shift;
+    key.ctrl = !!key.ctrl;
+    key.meta = !!key.meta;
+    key.name = namemap[key.name] || key.name || '';
+    key.bind = key.bind || mods[key.ctrl | key.meta << 1 | key.shift << 2] + key.name;
+    return key;
+  },
 
   _ttyWrite: function _ttyWrite(s, key){
     key = this.translate(s, key);
     this.emit('keybind', key);
     if (key.used) return;
 
-    if (Buffer.isBuffer(s))
+    if (Buffer.isBuffer(s)) {
       s = s.toString('utf-8');
+    }
     if (s) {
       var lines = s.split(/\r\n|\n|\r/);
       for (var i = 0, len = lines.length; i < len; i++) {
-        if (i > 0) {
-          this._line();
-        }
+        i && this._line();
         this._insertString(lines[i]);
       }
     }
   }
 };
 
-
 UltraRLI.prototype._refreshLine = UltraRLI.prototype.refreshLine;
+
+var namemap = { backspace: 'bksp',
+                escape:    'esc',
+                delete:    'del',
+                pagedown:  'pgdn',
+                pageup:    'pgup',
+                insert:    'ins' };
+
+var mods = [ '',
+             'ctrl+',
+             'alt+',
+             'ctrl+alt+',
+             'shift+',
+             'ctrl+shift+',
+             'alt+shift+',
+             'ctrl+alt+shift+' ];
+
+var mounts = {
+  topright: {
+    x: 'right',
+    y: 'top',
+    align: 'right',
+    bg: 'bgcyan'
+  },
+  topcenter: {
+    x: 'center',
+    y: 'top',
+    align: 'center',
+    bg: 'bgcyan'
+  }
+};

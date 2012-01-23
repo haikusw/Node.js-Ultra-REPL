@@ -6,9 +6,9 @@ var loader = require('context-loader');
 
 var builtins = require('../lib/builtins');
 
+var style = require('../settings/styling');
 var defaults = require('../settings/options').inspector;
 var names = require('../settings/text').names;
-var style = require('../settings/styling');
 
 var nameColors = style.context.names;
 var nameIndex = 1;
@@ -27,26 +27,30 @@ function Context(isGlobal){
 
   Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
 
-  this.name = names.shift().color(nameColors[nameIndex++ % nameColors.length]);
+
 
   if (isGlobal) {
     if (module.globalConfigured) return global;
     module.globalConfigured = true;
+    this.isGlobal = true;
+    this.initialize();
 
-    this.ctx = global;
-    Object.defineProperty(this, 'global', { value: run('this', this.ctx) });
-
-    Object.defineProperties(global, {
+    Object.defineProperties(this.ctx, {
       module:   { value: module },
       require:  { value: require },
       exports:  { get: function( ){ return module.exports; },
                   set: function(v){ module.exports = v;    } }
     });
 
-    scripts.set(this, []);
-    this.history = [];
-    this.createInspector();
+    Object.getOwnPropertyNames(global).forEach(function(prop){
+      if (prop !== 'root' && prop !== 'GLOBAL' && !(prop in this)) {
+        Object.defineProperty(this, prop, Object.getOwnPropertyDescriptor(global, prop));
+      }
+    }, this.ctx);
+
+    process.nextTick(function(){ this.name = newName() }.bind(this));
   } else {
+    this.name = newName();
     this.initialize();
   }
 }
@@ -222,4 +226,8 @@ function run(code, ctx, name){
 function parsify(src){
   try { return Function(src), true; }
   catch (e) { return e }
+}
+
+function newName(){
+  return names.shift().color(nameColors[nameIndex++ % nameColors.length]);
 }

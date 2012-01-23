@@ -73,7 +73,7 @@ Evaluator.prototype = {
   },
 
   remove: function remove(){
-    if (this.current.ctx === global) {
+    if (this.current.isGlobal) {
       return new Error("can't remove global");
     }
     var current = this.current;
@@ -86,7 +86,7 @@ Evaluator.prototype = {
   },
 
   reset: function reset(){
-    if (this.current.ctx === global) {
+    if (this.current.isGlobal) {
       return new Error("can't reset global");
     }
     for (var i in require.cache) {

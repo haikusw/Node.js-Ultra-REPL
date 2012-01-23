@@ -11,6 +11,7 @@ require('../lib/string-utils').attachTo(String.prototype);
 module.exports = UltraRLI;
 
 function UltraRLI(stream, completer){
+  var self = this;
   EventEmitter.call(this);
 
   var output = this.output = stream.output;

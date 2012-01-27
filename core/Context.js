@@ -20,6 +20,11 @@ var scripts = new WeakMap;
 var runInThisContext = vm.runInThisContext;
 
 
+var tryContext = vm.createContext();
+run('this', tryContext);
+
+
+
 module.exports = Context;
 
 function Context(isGlobal){
@@ -31,6 +36,7 @@ function Context(isGlobal){
     if (module.globalContext) return module.globalContext;
     Object.defineProperty(module, 'globalContext', { value: this });
     this.isGlobal = true;
+    this.name = 'global';
 
 
     function Module(id, parent) {
@@ -48,10 +54,10 @@ function Context(isGlobal){
     var req = function(req){ return function require(path){ return req(path) } }(require);
 
     Object.getOwnPropertyNames(global).forEach(function(prop){
-      if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this)) {
-        Object.defineProperty(this, prop, Object.getOwnPropertyDescriptor(global, prop));
+      if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this.ctx)) {
+        Object.defineProperty(this.ctx, prop, Object.getOwnPropertyDescriptor(global, prop));
       }
-    }, this.ctx);
+    }, this);
 
     Object.defineProperties(this.ctx, {
       module:  { value: mod },
@@ -61,7 +67,8 @@ function Context(isGlobal){
       global:  { value: this.global, enumerable: true, writable: true, configurable: true },
     });
 
-    process.nextTick(function(){ this.name = newName() }.bind(this));
+    run('this', this.ctx);
+
   } else {
     this.name = newName();
   }
@@ -100,7 +107,7 @@ Context.prototype = {
   },
 
   syntaxCheck: function syntaxCheck(src){
-    src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
+    //src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
     var result = parsify(src);
     if (result === true) return src;
     src += ';';
@@ -113,25 +120,11 @@ Context.prototype = {
   runScript: function runScript(script){
     scripts.get(this).push(script);
     var globals = this.globals();
-    var result = script.runInContext(this.ctx).result;
-    globals = diffObject(this.globals(), globals);
-    script.globals = Object.keys(globals);
-    if (script.globals.length) {
-      if (!inObject(globals, result)) {
-        result = {
-          completion: result,
-          globals: globals
-        };
-      } else {
-        result = {
-          globals: globals
-        };
-      }
-    } else {
-      result = {
-        completion: result
-      };
-    }
+    var result = {
+      completion: script.runInContext(this.ctx).result,
+      globals: diffObject(this.globals(), globals)
+    };
+    script.globals = Object.keys(result.globals);
     this.history.push({
       code: script.code,
       result: result,
@@ -236,7 +229,7 @@ function run(code, ctx, name){
 }
 
 function parsify(src){
-  try { return Function(src), true; }
+  try { return run('1&&function(){\n'+src+'\n}', tryContext), true; }
   catch (e) { return e }
 }
 

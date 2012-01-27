@@ -9,8 +9,6 @@ var Context = require('./Context');
 var slice = Function.prototype.call.bind(Array.prototype.slice);
 
 
-var tryContext = vm.createContext();
-
 
 module.exports = Evaluator;
 
@@ -18,12 +16,9 @@ function Evaluator(){
   EventEmitter.call(this);
 
   this.contexts = new Iterable;
-  this.current = new Context(true);
   this.iterator =  this.contexts.__iterator__();
-  this.contexts.add('global', this.current);
-  var self = this;
+  this.add(new Context(true));
   patchRunInThisContext(this);
-  Object.defineProperty(this.current, 'columns', { get: function(){ return self.columns } });
 }
 
 
@@ -96,26 +91,30 @@ Evaluator.prototype = {
   },
 
   evaluate: function evaluate(code, finalize){
-    var output = {
-      status: 'success',
-      code: code.trim(),
-      result: this.current.syntaxCheck(code)
-    };
+    var syntaxCheck = this.current.syntaxCheck(code);
 
-    if (output.result instanceof SyntaxError) {
-      output.status = 'syntax_error';
-
+    if (typeof syntaxCheck !== 'string') {
+      return {
+        status: 'syntax_error',
+        completion: syntaxCheck,
+        code: code
+      };
     } else {
-      output.code = output.result;
+      var output = { code: syntaxCheck };
       try {
-        output.result = this.current.runCode(output.code, this.name, finalize);
+        var result = this.current.runCode(output.code, this.name.stripAnsi(), finalize);
+        if (typeof result === 'object') {
+          output.completion = result.completion;
+          output.globals = result.globals;
+        }
         output.status = 'success';
-        if (output.result !== 'async') {
+        if (result !== 'async') {
           finalize(output)
         }
       } catch (e) {
-        output.result = e;
+        output.completion = e;
         output.status = 'error';
+        finalize(output)
       }
     }
     return output;

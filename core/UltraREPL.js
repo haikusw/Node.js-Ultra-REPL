@@ -1,28 +1,29 @@
+"use strict";
 require('harmony-collections').attachIfMissing(global);
 
-var util = require('util');
-var vm = require('vm');
-var path = require('path');
-var repl = require('repl');
-var fs = require('fs');
+var util  = require('util');
+var path  = require('path');
+var fs    = require('fs');
+var vm    = require('vm');
 
 require('../lib/string-utils').attachTo(String.prototype);
-var Dict = require('../lib/Dict');
-var Results = require('../lib/PageSet');
-var Commander = require('./Commander');
-var UltraRLI = require('./UltraRLI');
-var Evaluator = require('./Evaluator');
-var Highlighter = require('./Highlighter');
 
-var monkeypatch = require('../lib/monkeypatch');
+var Commander    = require('./Commander');
+var UltraRLI     = require('./UltraRLI');
+var Evaluator    = require('./Evaluator');
+var Highlighter  = require('./Highlighter');
 
+var Dict         = require('../lib/Dict');
+var Results      = require('../lib/PageSet');
 
-var style = require('../settings/styling');
-var text = require('../settings/text');
-var builtins = require('../lib/builtins');
+var monkeypatch  = require('../lib/monkeypatch');
+var builtins     = require('../lib/builtins');
 
-var widest = require('../lib/string-utils').widest;
-var chunk = require('../lib/string-utils').chunk;
+var style        = require('../settings/styling');
+var text         = require('../settings/text');
+
+var widest       = require('../lib/string-utils').widest;
+var chunk        = require('../lib/string-utils').chunk;
 
 
 
@@ -30,12 +31,13 @@ module.exports.UltraREPL = UltraREPL;
 
 
 function UltraREPL(options){
+  var self = this;
   options = options || {};
   options.stream = options.stream || process;
 
   monkeypatch.typedArrays(global);
   var context = this.context = new Evaluator;
-  String.prototype.color.context = this.context;
+  String.prototype.color.context = context;
 
   this.appPrompt = options.prompt || 'js';
   this.buffered = [];
@@ -50,7 +52,7 @@ function UltraREPL(options){
 
   monkeypatch.fixEmitKey(stream.input);
 
-  var complete = function(){}.bind(this);
+  var complete = function(){};
   var rli = new UltraRLI(stream, complete);
 
   Object.defineProperties(this, {
@@ -59,79 +61,97 @@ function UltraREPL(options){
     rli: hidden(rli)
   });
 
-  rli.on('close', stream.input.destroy.bind(stream.input));
-  rli.on('resize', this.refresh.bind(this));
+  rli.on('close', function(){ stream.input.destroy() });
+  rli.on('resize', function(){ self.refresh() });
   rli.on('keybind', function(key){
-    this.keydisplay && rli.timedWrite('topright', key.bind, style.info.keydisplay);
-  }.bind(this));
+    self.keydisplay && rli.timedWrite('topright', key.bind, style.info.keydisplay);
+  });
   rli.on('line', function(cmd){
-    if (!cmd || this.commands.keyword(cmd.trim())) return;
+    if (!cmd || self.commands.keyword(cmd.trim())) return;
 
-    this.buffered.push(cmd);
-    this.rli.clearInput();
+    self.buffered.push(cmd);
+    self.rli.clearInput();
     clearTimeout(run.timeout);
-    run.timeout = setTimeout(run.bind(this), 20);
+    run.timeout = setTimeout(run, 20);
 
     function run(){
-      if (!this.buffered.length) return this.updatePrompt();
-      var evaled = context.evaluate(this.buffered.join('\n'), finalize.bind(this));
+      if (!self.buffered.length) return self.updatePrompt();
+      var evaled = context.evaluate(self.buffered.join('\n'), finalize);
       if (evaled.status === 'syntax_error') {
         if (!finalize.errored) {
-          this.timedPrompt(evaled.result.name);
+          evaled.completion && self.timedPrompt(evaled.completion.name);
           finalize.errored = true;
         }
         clearTimeout(finalize.syntax);
-        finalize.syntax = setTimeout(function(){
-          finalize.call(this, { text: evaled.result.stack });
-        }.bind(this), 500);
-        return this.updatePrompt();
+        if (evaled.completion) {
+          finalize.syntax = setTimeout(function(){
+            finalize(evaled);
+          }, 500);
+        }
+        return self.updatePrompt();
       }
     }
 
     function finalize(evaled){
       finalize.errored = false;
       clearTimeout(finalize.syntax);
-      if (evaled.text) {
-        this.inspector(evaled.text);
+
+      var output = [], header, content;
+
+      if (evaled.status === 'error' || evaled.status === 'syntax_error') {
+        output.push((' '+evaled.completion.message).pad(self.width).color(style.errorbg));
+        if (evaled.status === 'error') {
+          var where = evaled.completion.stack.split('\n')[1].split(':');
+          where = {
+            line: where[where.length - 2] - 1,
+            col: where[where.length - 1] - 1
+          };
+          output.push(' '+self.buffered[where.line]+'\n '+' '.repeat(where.col) + '^');
+        } else {
+          output.push(self.buffered.join('\n'));
+        }
       } else {
-        var output = [], header, content;
 
-        if (content = evaled.result.completion) {
+        if (evaled.completion) {
 
-          if (typeof content === 'string') {
-            output.push(' Text'.pad(this.width).color(style.inspector.header), content.color(style.inspector.String));
+          if (typeof evaled.completion === 'string') {
+            evaled.text = evaled.completion;
           } else {
-            this.context._ = content;
-            output.push(' Result'.pad(this.width).color(style.inspector.header), this.context._);
-            if (typeof content === 'function' && (content+'').slice(-17) !== '{ [native code] }') {
-              output.push(' Function Source'.pad(this.width).color(style.inspector.header), highlight(content));
+            self.context._ = evaled.completion;
+            output.push(' Result'.pad(self.width).color(style.inspector.header), self.context._);
+            if (typeof evaled.completion === 'function' && (evaled.completion+'').slice(-17) !== '{ [native code] }') {
+              output.push(' Function Source'.pad(self.width).color(style.inspector.header), highlight(evaled.completion));
             }
           }
         }
 
-        if (content = evaled.result.globals) {
-          this.context._ = content;
-          output.push(' New Globals'.pad(this.width).color(style.inspector.header), this.context._);
+        if (evaled.globals && Object.keys(evaled.globals).length) {
+          self.context._ = evaled.globals;
+          output.push(' New Globals'.pad(self.width).color(style.inspector.header), self.context._);
         }
 
-        if (!output.length) {
-          this.context._ = evaled.result;
-          output.push(this.context._);
+        if (evaled.text) {
+          output.push(' Text'.pad(self.width).color(style.inspector.header), evaled.text.color(style.inspector.String));
         }
-
-        this.inspector(output.join('\n\n'));
       }
 
-      this.resetInput();
+      if (!output.length) {
+        self.context._ = evaled;
+        output.push(self.context._);
+      }
+
+      self.inspector(output.join('\n\n'));
+
+      self.resetInput();
     }
-  }.bind(this));
+  });
 
   this.commands = new Commander(rli);
 
   var handler = function(action, cmd, params){
-    var result = action.call(this, cmd, params);
-    typeof result !== 'undefined' && this.inspector(result);
-  }.bind(this);
+    var result = action.call(self, cmd, params);
+    typeof result !== 'undefined' && self.inspector(result);
+  };
 
   this.commands.on('keybind', handler);
   this.commands.on('keyword', handler);
@@ -257,6 +277,7 @@ UltraREPL.prototype = {
     timedPrompt.timer && clearTimeout(timedPrompt.timer);
     timedPrompt.timer = setTimeout(this.updatePrompt.bind(this), time || 5000);
   },
+
   generateHelp: function generateHelp(help, screenW){
     var nameW = widest(help, 'name') + 2;
     var triggerW = widest(help, 'trigger') + 2;

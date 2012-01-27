@@ -1,6 +1,7 @@
 var styling = function(){
   return {
     error: red2,
+    errorbg: [bg_red1, white2],
     success: green2,
 
     inspector: {

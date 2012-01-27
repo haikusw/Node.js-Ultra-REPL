@@ -105,7 +105,7 @@ function inspect(obj, options, styling) {
   try {
     return formatValue(obj, '', options.depth || 2, settings);
   } catch (e) {
-    return formatValue(e, '', options.depth || 2, settings) + '\n' + e.stack.split('\n').slice(1).join('\n');
+    return formatValue(e, '', options.depth || 2, settings) + '\n' + e.stack;
   }
 }
 
@@ -223,9 +223,6 @@ function formatValue(value, key, depth, settings) {
 
   var base = '';
   var type = isConstructor(value) ? 'Constructor' : getClass(value);
-  //if (key === '__proto__') {
-  //  type = 'Proto';
-  //}
   var array = isArray(value);
   var braces = array ? settings.square : settings.curly;
 
@@ -290,6 +287,7 @@ function formatValue(value, key, depth, settings) {
 
   var output = [];
 
+
   try {
     if (Object.isFrozen(value)) {
       output.push(color('Frozen', 'Proto', true));
@@ -326,7 +324,7 @@ function formatValue(value, key, depth, settings) {
 function formatProperty(value, key, depth, settings, array) {
   // str starts as an array, val is a property descriptor
   var str = [];
-  var val = Object.getOwnPropertyDescriptor(value, key);
+  var val = key === '__proto__' ? undefined : Object.getOwnPropertyDescriptor(value, key);
 
   // V8 c++ accessors like process.env that don't correctly
   // work with Object.getOwnPropertyDescriptor

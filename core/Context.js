@@ -168,8 +168,6 @@ Context.prototype = {
     }
 
     var format = function(){
-      if (typeof last === 'undefined') return '';
-
       var obj = last;
 
       if (obj === this.global) {

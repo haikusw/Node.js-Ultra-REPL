@@ -50,7 +50,7 @@ function UltraREPL(options){
     output: options.stream.stdout || options.stream,
   };
 
-  monkeypatch.fixEmitKey(stream.input);
+  //monkeypatch.fixEmitKey(stream.input);
 
   var complete = function(){};
   var rli = new UltraRLI(stream, complete);
@@ -79,7 +79,6 @@ function UltraREPL(options){
       var evaled = context.evaluate(self.buffered.join('\n'), finalize);
       if (evaled.status === 'syntax_error') {
         if (!finalize.errored) {
-          evaled.completion && self.timedPrompt(evaled.completion.name);
           finalize.errored = true;
         }
         clearTimeout(finalize.syntax);
@@ -93,15 +92,19 @@ function UltraREPL(options){
     }
 
     function finalize(evaled){
+      if (typeof evaled === 'undefined') return;
       finalize.errored = false;
       clearTimeout(finalize.syntax);
 
-      var output = [], header, content;
+      var output = [];
+      var completion = 'completion' in evaled && evaled.completion;
+      var globals = 'globals' in evaled && evaled.globals;
+
 
       if (evaled.status === 'error' || evaled.status === 'syntax_error') {
-        output.push((' '+evaled.completion.message).pad(self.width).color(style.errorbg));
+        output.push((' '+completion.message).pad(self.width).color(style.errorbg));
         if (evaled.status === 'error') {
-          var where = evaled.completion.stack.split('\n')[1].split(':');
+          var where = completion.stack.split('\n')[1].split(':');
           where = {
             line: where[where.length - 2] - 1,
             col: where[where.length - 1] - 1
@@ -112,21 +115,21 @@ function UltraREPL(options){
         }
       } else {
 
-        if (evaled.completion) {
+        if (completion) {
 
-          if (typeof evaled.completion === 'string') {
-            evaled.text = evaled.completion;
+          if (typeof completion === 'string') {
+            evaled.text = completion;
           } else {
-            self.context._ = evaled.completion;
+            self.context._ = completion;
             output.push(' Result'.pad(self.width).color(style.inspector.header), self.context._);
-            if (typeof evaled.completion === 'function' && (evaled.completion+'').slice(-17) !== '{ [native code] }') {
-              output.push(' Function Source'.pad(self.width).color(style.inspector.header), highlight(evaled.completion));
+            if (typeof completion === 'function' && (completion+'').slice(-17) !== '{ [native code] }') {
+              output.push(' Function Source'.pad(self.width).color(style.inspector.header), highlight(completion));
             }
           }
         }
 
-        if (evaled.globals && Object.keys(evaled.globals).length) {
-          self.context._ = evaled.globals;
+        if (globals && Object.keys(globals).length) {
+          self.context._ = globals;
           output.push(' New Globals'.pad(self.width).color(style.inspector.header), self.context._);
         }
 
@@ -136,7 +139,7 @@ function UltraREPL(options){
       }
 
       if (!output.length) {
-        self.context._ = evaled;
+        self.context._ = 'completion' in evaled ? evaled.completion : evaled;
         output.push(self.context._);
       }
 

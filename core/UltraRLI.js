@@ -1,4 +1,3 @@
-var RLI = require('readline').Interface;
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var tty = require('tty');
@@ -44,7 +43,7 @@ function UltraRLI(stream, completer){
 }
 
 UltraRLI.prototype = {
-  __proto__: Object.create(RLI.prototype),
+  __proto__: EventEmitter.prototype,
   constructor: UltraRLI,
 
   resize: function resize(size){
@@ -64,9 +63,41 @@ UltraRLI.prototype = {
   saveCursor: function saveCursor(){ this._ttyWrite('\x1b[1s') },
   clearScreen: function clearScreen(){ this._ttyWrite('\x1b[1J') },
 
+  _addHistory: function _addHistory() {
+    if (this.line.length === 0) return '';
+
+    this.history.unshift(this.line);
+    this.historyIndex = -1;
+    if (this.history.length > 100) this.history.pop();
+    
+    this.clearLine();
+    return this.history[0];
+  },
+
+  _historyNext: function _historyNext() {
+    if (this.historyIndex > 0) {
+      this.line = this.history[--this.historyIndex];
+      this.cursor = this.line.alength;
+      this.refreshLine();
+
+    } else if (this.historyIndex === 0) {
+      this.historyIndex = -1;
+      this.clearLine();
+    }
+  },
+
+  _historyPrev: function _historyPrev() {
+    if (this.historyIndex + 1 < this.history.length) {
+      this.historyIndex++;
+      this.line = this.history[this.historyIndex];
+      this.cursor = this.line.alength;
+      this.refreshLine();
+    }
+  },
+
   _line: function _line(){
     var line = this._addHistory();
-    if (process.platform === 'win32') this.resize();
+    //if (process.platform === 'win32') this.resize();
     this.emit('line', line);
   },
 
@@ -294,7 +325,7 @@ UltraRLI.prototype = {
     if (key.used) return;
 
     if (Buffer.isBuffer(s)) {
-      s = s.toString('utf-8');
+      s = s.toString('utf8');
     }
     if (s) {
       var lines = s.split(/\r\n|\n|\r/);

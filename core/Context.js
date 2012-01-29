@@ -12,7 +12,9 @@ var names = require('../settings/text').names;
 
 var nameColors = style.context.names;
 var nameIndex = 1;
-var inspector = loader.loadScript(path.resolve(__dirname, 'inspect.js'));
+var inspector = loader.loadScript(path._makeLong(__dirname + '/inspect.js'));
+
+
 
 var contexts = new WeakMap;
 var scripts = new WeakMap;
@@ -170,6 +172,10 @@ Context.prototype = {
 
       var obj = last;
 
+      if (obj === this.global) {
+        run('this', this.ctx);
+      }
+
       if (!this.builtins && (obj === this.global || obj === this.ctx)) {
         obj = filter(obj, builtins.all);
       }
@@ -206,6 +212,20 @@ function diffObject(obj, diff){
 
 function inObject(obj, val){
   return Object.getOwnPropertyNames(obj).some(function(s){ return egal(obj[s], val) });
+}
+
+var descFields = ['get', 'set', 'value', 'enumerable', 'configurable', 'writeable'];
+
+function isDescriptor(obj){
+  if (obj && typeof obj === 'obj') {
+    var keys = Object.keys(obj);
+    if (keys.length < 7) {
+      return keys.all(function(key){
+        return !~descFields.indexOf(key);
+      });
+    }
+  }
+  return false;
 }
 
 

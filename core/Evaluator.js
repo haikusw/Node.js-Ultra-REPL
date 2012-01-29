@@ -106,6 +106,8 @@ Evaluator.prototype = {
         if (typeof result === 'object') {
           output.completion = result.completion;
           output.globals = result.globals;
+        } else {
+          output.completion = result;
         }
         output.status = 'success';
         if (result !== 'async') {

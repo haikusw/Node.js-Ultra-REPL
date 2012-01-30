@@ -58,12 +58,20 @@ function UltraREPL(options){
 
   var complete = function(){};
   var rli = new UltraRLI(stream, complete);
+  var pages;
 
   Object.defineProperties(this, {
     input: hidden(stream.input),
     output: hidden(stream.output),
-    rli: hidden(rli)
+    rli: hidden(rli),
+    pages: {
+      configurable: true,
+      get: function( ){ return pages },
+      set: function(v){ pages = v.bisect(this.height - 2) }
+    }
   });
+
+  this.pages = new Results;
 
   rli.on('close', function(){ stream.input.destroy() });
   rli.on('resize', function(){ self.refresh() });
@@ -101,7 +109,6 @@ function UltraREPL(options){
   this.commands.on('keyword', handler);
 
   this.context.columns = this.width - 30;
-  this.pages = (new Results).bisect(this.height - 2);
   this.updatePrompt();
   this.loadScreen();
 }
@@ -162,7 +169,7 @@ UltraREPL.prototype = {
 
   updatePrompt: function updatePrompt(){
     var prompt = [this.appPrompt];
-    if (this.context.count > 1) {
+    if (this.context.length) {
       prompt.push((this.context.index + 1 + '').color(style.prompt.number) + ' ' + this.context.name);
     }
     if (this.messages) {
@@ -178,8 +185,7 @@ UltraREPL.prototype = {
   },
 
   clear: function clear(){
-    var results = new Results;
-    this.pages = results.bisect(this.height - 2);
+    this.pages = new Results;
     this.rli.writePage(this.pages[0]);
   },
 
@@ -238,15 +244,10 @@ UltraREPL.prototype = {
       }
     }
 
-    var results = new Results(output);
-    this.pages = results.bisect(this.height - 2);
+    this.pages = new Results(output);
     this.pageLabel();
     this.rli.writePage(this.pages[0]);
-    this.resetInput();
   },
-
-  get pages(){},
-  set pages(v){ Object.defineProperty(this, 'pages', { value: v, writable: true, configurable: true }) },
 
   pageLabel: function pageLabel(){
     var page = this.pages.length;
@@ -264,7 +265,7 @@ UltraREPL.prototype = {
   timedPrompt: function timedPrompt(message, color, time){
     this.messages = message.color(color);
     this.updatePrompt();
-    timedPrompt.timer && clearTimeout(timedPrompt.timer);
+    clearTimeout(timedPrompt.timer);
     timedPrompt.timer = setTimeout(this.updatePrompt.bind(this), time || 5000);
   },
 

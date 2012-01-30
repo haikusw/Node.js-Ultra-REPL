@@ -60,20 +60,48 @@ Object.defineProperties(String.prototype, {
     if (this.alength < breakAt) return this;
     return this.chunk(' ', breakAt, indent).trim();
   }),
-  chunk: desc(function chunk(split, bounds, indent){
-    var source = this + split;
-    bounds = Array.isArray(bounds) ? bounds : [bounds - 10, bounds]
-    var result = [], match, regex = RegExp('.{'+bounds+'}'+split, 'g');
-    while (match = regex.exec(source)) {
-      result.push(match[0].slice(split.length));
-      regex.lastIndex -= split.length;
-    }
-    result[0] = source.slice(0, split.length) + result[0];
-    result.push(result.pop().slice(0, -split.length));
-    indent = ' '.repeat(+indent);
-    return result.map(function(s){ return indent + s }).join('\n');
-  })
+  chunk: desc(chunk)
 })
+
+function chunk(split, bounds, indent, source){
+  if (Array.isArray(source)) {
+    var orig = source;
+    source = source.join(split);
+  } else if (typeof this === 'string') {
+    source = this;
+  }
+  source = source.stripAnsi() + split;
+
+  bounds = Array.isArray(bounds) ? bounds : [bounds - 10, bounds]
+
+  var result = [], match, regex = RegExp('.{'+bounds+'}'+split, 'g'), lastEnd=0;
+
+  while (match = regex.exec(source)) {
+    result.push(match[0].slice(split.length));
+    lastEnd += match[0].length;
+    regex.lastIndex -= split.length;
+  }
+  if (lastEnd < source.length - 1) {
+    result.push(source.slice(lastEnd - split.length));
+  }
+  result[0] = source.slice(0, split.length) + result[0];
+  //result.push(result.pop());
+  if (indent > 0) {
+    indent = ' '.repeat(indent);
+    return result.map(function(s){ return indent + s }).join('\n');
+  } else if (orig) {
+    var offset = 0;
+    return result.map(function(s, i){
+      s = s.slice(0,-split.length).split(split);
+      var length = s.length;
+      s = orig.slice(offset, offset + length);
+      offset += length;
+      return s.join(split);
+    }).join(split + '\n  ');
+  }
+  return result;
+}
+
 
 var builtins = {};
 var styles = {};
@@ -84,6 +112,7 @@ function inspect(obj, options, globalSettings) {
     showHidden: !!options.hiddens,
     showProtos: options.protos,
     showBuiltins: options.builtins,
+    multiItemLines: options.multiItemLines,
     maxWidth: globalSettings.columns || 60,
     colors: !!globalSettings.colors,
     style: globalSettings.colors ? color : noColor,
@@ -200,6 +229,7 @@ var qMatch = [/(')/g, /(")/g];
 // then escape slashes and opposite quotes if string had both types
 function quotes(s) {
   s = String(s).replace(/\\/g, '\\\\');
+  s = String(s).replace(/\n/g, '\\n');
   var qWith = +(s.match(qMatch[0]) === null);
   return q[qWith] + s.replace(qMatch[1-qWith], '\\$1') + q[qWith];
 }
@@ -220,21 +250,20 @@ function formatValue(value, key, depth, settings) {
 
   var base = '';
   var type = isConstructor(value) ? 'Constructor' : getClass(value);
-  var array = isArray(value);
-  var braces = array ? settings.square : settings.curly;
 
   if (type in formatters) {
     // types can be formatted by matching their internal class
     base = settings.style(formatters[type](value), type);
   }
 
+  var maxwidth = settings.maxWidth - (settings.depth - depth) * 2 - key.alength;
+
   // prevent deeper inspection for primitives and regexps
   if (isPrimitive(value) || !settings.showHidden && (type === 'RegExp' || type === 'Error')) {
     if (type === 'String') {
-      var max = settings.maxWidth - key.alength - depth * 2 - 10
-      if (base.alength > max) {
+      if (base.alength > maxwidth - 6) {
         base = base.stripAnsi();
-        base = settings.style(base.slice(0, max) + '...' + base[0], 'String');
+        base = settings.style(base.slice(0, maxwidth - 6) + '...' + base[0], 'String');
       }
     }
     return base;
@@ -274,17 +303,17 @@ function formatValue(value, key, depth, settings) {
     }
   }
 
+  var array = isArray(value);
+  var braces = array ? settings.square : settings.curly;
+
   if (properties.length === 0) {
     if (base) return base;
     if (!array || value.length === 0) return braces.join('');
   }
   if (depth < 0) {
-    return (base?base+' ':'') + settings.style('More', 'More', true);
+    return (base ? base+' ' : '') + settings.style('More', 'More', true);
   }
 
-
-  settings.seen.push(value);
-  var output = [];
 
   try {
     if (Object.isFrozen(value)) {
@@ -297,13 +326,34 @@ function formatValue(value, key, depth, settings) {
   } catch (e) {}
 
 
+  settings.seen.push(value);
+  var output = [];
+
+  var primitive = true;
   // iterate array indexes first
-  if (array) {
+  if (array && value.length) {
+    var item, maxlength = 0, total = 0, length;
     for (var i = 0, len = value.length; i < len; i++) {
       if (typeof value[i] === 'undefined') {
         output.push('');
       } else {
-        output.push(formatProperty(value, i, depth, settings, array));
+        item = formatProperty(value, i, depth, settings, array);
+        if (primitive) {
+          primitive = primitive && isPrimitive(value[i]);
+          length = item.alength;
+          maxlength = Math.max(length, maxlength);
+          total += length;
+        }
+        output.push(item);
+      }
+    }
+    if (primitive) {
+      if (settings.multiItemLines) {
+        if (maxlength < maxwidth / 2) {
+          output = [chunk(', ', [maxwidth - 30, maxwidth], 0, output)];
+        }
+      } else if (total < maxwidth) {
+        output = [output.join(', ')];
       }
     }
   }
@@ -311,18 +361,21 @@ function formatValue(value, key, depth, settings) {
   // properties on objects and named array properties
   properties.forEach(function(key) {
     if (!array || !numeric.test(key)) {
+      primitive = primitive && isPrimitive(value[key]);
       var prop = formatProperty(value, key, depth, settings, array);
       prop.length && output.push(prop);
     }
   });
 
-  return combine(output, base, braces, settings.maxWidth - 20 - depth * 2 - key.alength);
+  return combine(output, base, braces, maxwidth, primitive || settings.multiItemLines);
 }
 
 function formatProperty(value, key, depth, settings, array) {
   // str starts as an array, val is a property descriptor
   var str = [];
   var val = key === '__proto__' ? undefined : Object.getOwnPropertyDescriptor(value, key);
+
+
 
   // V8 c++ accessors like process.env that don't correctly
   // work with Object.getOwnPropertyDescriptor
@@ -332,6 +385,48 @@ function formatProperty(value, key, depth, settings, array) {
       enumerable: true,
       writable: true
     };
+  }
+
+
+  var nameFormat;
+
+  if (array && numeric.test(key)) {
+    key = '';
+  } else {
+
+    if (/^[a-zA-Z_\$][a-zA-Z0-9_\$]*$/.test(key)) {
+      // valid JavaScript name not requiring quotes
+
+      if (val.value && !val.writable) {
+        // color non-writable differently
+        nameFormat = 'Constant';
+      } else {
+        // regular name
+        nameFormat = 'Name';
+      }
+    } else {
+      // name requires quoting
+      nameFormat = 'String';
+      key = quotes(key);
+    }
+
+    if (!val.enumerable) {
+      if (settings.style.name !== 'color') {
+        // add brackets if colors are disabled
+        key = '[' + key + ']';
+      } else {
+        // use different coloring otherwise
+        nameFormat = 'H' + nameFormat;
+      }
+    }
+
+    if (key === '__proto__') {
+      key = formatters.Proto(val.value);
+      nameFormat = 'Proto';
+    }
+
+    key = settings.style(key, nameFormat) + ': ';
+    array = false;
   }
 
   // check for accessors
@@ -368,64 +463,29 @@ function formatProperty(value, key, depth, settings, array) {
     }
   }
 
-  // array indexes don't display their name
-  if (array && numeric.test(key)) return str;
 
-  var nameFormat;
-
-  if (/^[a-zA-Z_\$][a-zA-Z0-9_\$]*$/.test(key)) {
-    // valid JavaScript name not requiring quotes
-
-    if (val.value && !val.writable) {
-      // color non-writable differently
-      nameFormat = 'Constant';
-    } else {
-      // regular name
-      nameFormat = 'Name';
-    }
-  } else {
-    // name requires quoting
-    nameFormat = 'String';
-    key = quotes(key);
-  }
-
-  if (!val.enumerable) {
-    if (settings.style.name !== 'color') {
-      // add brackets if colors are disabled
-      key = '[' + key + ']';
-    } else {
-      // use different coloring otherwise
-      nameFormat = 'H' + nameFormat;
-    }
-  }
-
-  if (key === '__proto__') {
-    key = formatters.Proto(val.value);
-    nameFormat = 'Proto';
-  }
-
-  return settings.style(key, nameFormat) + ': ' + str;
+  return key + str;
 }
 
 function indent(str){
   return str.split('\n')
-            .map(function(line) { return '  ' + line; })
+            .map(function(line){ return '  ' + line })
             .join('\n');
 }
 
-function combine(output, base, braces, maxWidth) {
+function combine(output, base, braces, maxWidth, multiItemLines) {
   var lines = 0;
   // last line's length
   var length = output.reduce(function(prev, cur) {
     // number of lines
-    lines += 1 + !!~cur.indexOf('\n');
+    lines += ~cur.indexOf('\n') ? cur.match(/\n/).length : +!multiItemLines;
     return prev + cur.alength + 1;
   }, 0);
 
   if (base.length) {
     // if given base make it so that it's not too long
     length += base.alength;
-    if (length > maxWidth) {
+    if (length > maxWidth || lines > 1) {
       base = ' ' + base;
       output.unshift(lines > 1 ? '' : ' ');
     } else {
@@ -436,7 +496,8 @@ function combine(output, base, braces, maxWidth) {
   }
 
   // combine lines with commas and pad as needed
-  base += output.join(',' + (length > maxWidth ? '\n ' : '') + ' ') + ' ';
+  var separator = (lines > 1 || length > maxWidth) ? '\n  ' : ' ';
+  base += output.join(',' + separator) + ' ';
 
   // wrap in appropriate braces
   return braces[0] + base + braces[1];

@@ -3,6 +3,7 @@ module.exports = {
     builtins: true,
     hiddens: false,
     protos: true,
+    multiItemLines: true,
     depth: 4
   },
   autoload: [

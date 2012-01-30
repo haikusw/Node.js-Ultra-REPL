@@ -31,6 +31,11 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'f4' },
     action: toggle('currentSettings', 'protos')
   },
+  { name: 'Toggle Multi-item Lines',
+    help: 'Toggle showing multiple properties/array items per line.',
+    defaultTrigger: { type: 'keybind', trigger: 'f5' },
+    action: toggle('currentSettings', 'multiItemLines')
+  },
   { name: 'Toggle Colors',
     help: 'Toggle whether output is colored.',
     defaultTrigger: { type: 'keybind', trigger: 'f9' },
@@ -38,7 +43,7 @@ module.exports = [
   },
   { name: 'Inspect Depth--',
     help: 'Decrease inspector recurse depth',
-    defaultTrigger: { type: 'keybind', trigger: 'f5' },
+    defaultTrigger: { type: 'keybind', trigger: 'alt+1' },
     action: function(){
       var settings = this.context.current.settings;
       if (settings.depth > 1) {
@@ -50,7 +55,7 @@ module.exports = [
   },
   { name: 'Inspect Depth++',
     help: 'Increase inspector recurse depth',
-    defaultTrigger: { type: 'keybind', trigger: 'f6' },
+    defaultTrigger: { type: 'keybind', trigger: 'alt+2' },
     action: function(){
       var settings = this.context.current.settings;
       settings.depth++;

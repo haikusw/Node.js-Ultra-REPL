@@ -99,7 +99,7 @@ UltraRLI.prototype = {
   _historyNext: function _historyNext() {
     if (this.historyIndex > 0) {
       this.line = this.history[--this.historyIndex];
-      this.cursor = this.line.alength;
+      this.cursor = this.line.length;
       this.refreshLine();
 
     } else if (this.historyIndex === 0) {
@@ -112,7 +112,7 @@ UltraRLI.prototype = {
     if (this.historyIndex + 1 < this.history.length) {
       this.historyIndex++;
       this.line = this.history[this.historyIndex];
-      this.cursor = this.line.alength;
+      this.cursor = this.line.length;
       this.refreshLine();
     }
   },
@@ -151,9 +151,9 @@ UltraRLI.prototype = {
   refreshLine: function refreshLine(){
     if (this._closed) return;
     this.output.cursorTo(0, this.height);
+    this.output.clearLine();
     this.output.write(this._prompt + this.line);
-    this.output.clearLine(1);
-    this.output.cursorTo(this._promptLength + this.cursor);
+    this.toCursor()
   },
 
   toCursor: function toCursor(){
@@ -168,7 +168,6 @@ UltraRLI.prototype = {
   setPrompt: function setPrompt(prompt){
     this._prompt = prompt;
     this._promptLength = prompt.alength;
-    this.cursor = this.line.alength;
     this.refreshLine();
   },
 
@@ -180,7 +179,7 @@ UltraRLI.prototype = {
       this.output.cursorTo(0, from);
       this.output.clearLine();
     }
-    this.home();
+    this.toCursor();
   },
 
   writeFrom: function writeFrom(output, left, top){
@@ -193,7 +192,7 @@ UltraRLI.prototype = {
       this.output.write(output[i] );
       this.output.cursorTo(left);
     }
-    this.home();
+    this.toCursor();
   },
 
   writePage: function writePage(lines){
@@ -202,6 +201,7 @@ UltraRLI.prototype = {
       this.output.write(lines[i]);
       this.output.clearLine(1);
     };
+    this.toCursor();
   },
 
   scaleX: function scaleX(x){
@@ -227,7 +227,6 @@ UltraRLI.prototype = {
   eraseMount: function eraseMount(mount){
     if (typeof mount === 'string') mount = mounts[mount];
     if (!mount.contents) return;
-    this.cursor = this.line.alength;
     this.output.cursorTo(mount.left, mount.top);
     this.output.write(' '.repeat(mount.width).color(mount.bg));
     mount.width = 0;
@@ -247,7 +246,6 @@ UltraRLI.prototype = {
     } else if (mount.align === 'center') {
       mount.left -= mount.width / 2 | 0;
     }
-    this.cursor = this.line.alength;
     this.output.cursorTo(mount.left, mount.top);
     this.output.write(message.color(bg || mount.bg));
     this.toCursor();
@@ -279,7 +277,7 @@ UltraRLI.prototype = {
   },
 
   _insertString: function _insertString(c){
-    if (this.cursor < this.line.alength) {
+    if (this.cursor < this.line.length) {
       this.line = this.line.slice(0, this.cursor) + c + this.line.slice(this.cursor, this.line.length);
       this.cursor += c.length;
       this.refreshLine();
@@ -294,26 +292,24 @@ UltraRLI.prototype = {
     if (this.cursor) {
       this.cursor--;
     }
-    this.refreshLine();
+    this.toCursor();
   },
 
   _moveRight: function _moveRight(){
-    if (this.cursor !== this.line.alength) {
+    if (this.cursor !== this.line.length) {
       this.cursor++;
     }
-    this.refreshLine();
+    this.toCursor();
   },
 
   _lineLeft: function _lineLeft(){
     this.cursor = 0;
-    this.output.moveCursor(0);
-    this.refreshLine();
+    this.toCursor();
   },
 
   _lineRight: function _lineRight(){
-    this.cursor = this.line.alength;
-    this.output.moveCursor(this.line.alength);
-    this.refreshLine();
+    this.cursor = this.line.length;
+    this.toCursor();
   },
 
   _deleteLeft: function _deleteLeft() {
@@ -328,6 +324,28 @@ UltraRLI.prototype = {
     if (this.cursor < this.line.length) {
       this.line = this.line.slice(0, this.cursor) + this.line.slice(this.cursor + 1);
       this.refreshLine();
+    }
+  },
+
+  _wordLeft: function _wordLeft() {
+    if (this.cursor && this.line.length) {
+      var leading = this.line.slice(0, this.cursor);
+      var match = leading.match(/([^\w\s]+|\w+|)\s*$/);
+      if (match) {
+        this.cursor -= match[0].length;
+        this.toCursor();
+      }
+    }
+  },
+
+  _wordRight: function _wordRight() {
+    if (this.cursor < this.line.length) {
+      var trailing = this.line.slice(this.cursor);
+      var match = trailing.match(/^(\s+|\W+|\w+)\s*/);
+      if (match) {
+        this.cursor += match[0].length;
+        this.toCursor();
+      }
     }
   },
 

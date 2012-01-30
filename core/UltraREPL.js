@@ -118,6 +118,7 @@ UltraREPL.prototype = {
   get currentSettings(){ return this.context.current.settings },
 
   loadScreen: function loadScreen(){
+    this.rli.clearScreen();
 
     var intro = text.intro.map(function(s){
       return s[0].color(style.intro[0]) + ' ' + s[1].color(style.intro[1]);
@@ -291,11 +292,12 @@ UltraREPL.prototype = {
 
 
 function highlight(fn){
-  if (typeof fn !== 'function') {
-    throw new TypeError('Highlighter needs a function');
+  if (typeof fn === 'function') fn = fn + '';
+  if (typeof fn !== 'string') {
+    throw new TypeError('Highlighter needs a function or string');
   }
   var out = [];
-  Highlighter.highlight(fn+'', function(event, val, type){
+  Highlighter.highlight(fn, function(event, val, type){
     if (event === 'line') {
       out.push('\n');
     } else if (event === 'token') {

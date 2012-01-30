@@ -11,6 +11,8 @@ var inspector = new Script(__dirname + '/inspect.js');
 
 var contexts = [];
 
+
+
 module.exports = Context;
 
 function Context(globalSettings, isGlobal){
@@ -51,19 +53,29 @@ Context.prototype = {
     this.snapshot = init.snapshot;
     this.history = [];
     if (this.isGlobal) {
-      vm.runInContext('global = this', this.ctx);
+      this.setGlobal();
+
       Object.getOwnPropertyNames(global).forEach(function(prop){
         if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this.ctx)) {
           Object.defineProperty(this.ctx, prop, Object.getOwnPropertyDescriptor(global, prop));
         }
       }, this);
-      vm.runInContext('this', this.ctx);
+
+      this.refresh();
     }
     return this;
   },
 
   view: function view(){
     return new Success(this, new Script('this'), this.global);
+  },
+
+  setGlobal: function setGlobal(){
+    vm.runInContext('global = this', this.ctx);
+  },
+
+  refresh: function refresh(){
+    vm.runInContext('this', this.ctx);
   },
 
   run: function run(script, callback){

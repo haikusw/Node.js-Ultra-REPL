@@ -5,7 +5,7 @@ var style = require('../settings/styling');
 
 
 function nodeBuiltins(){
-  this.context.ctx.global = this.context.global;
+  this.context.current.setGlobal();
   builtins.node.forEach(function(name){
     Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
   }, this);

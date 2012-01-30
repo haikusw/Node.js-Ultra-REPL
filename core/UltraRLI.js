@@ -104,7 +104,7 @@ UltraRLI.prototype = {
 
     } else if (this.historyIndex === 0) {
       this.historyIndex = -1;
-      this.clearLine();
+      this.clearInput();
     }
   },
 

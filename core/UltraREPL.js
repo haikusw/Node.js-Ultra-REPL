@@ -224,6 +224,7 @@ UltraREPL.prototype = {
   },
 
   refresh: function refresh(){
+    this.context.current.refresh();
     this.writer(this.context.lastResult);
     this.updatePrompt();
   },
@@ -243,6 +244,9 @@ UltraREPL.prototype = {
     this.rli.writePage(this.pages[0]);
     this.resetInput();
   },
+
+  get pages(){},
+  set pages(v){ Object.defineProperty(this, 'pages', { value: v, writable: true, configurable: true }) },
 
   pageLabel: function pageLabel(){
     var page = this.pages.length;

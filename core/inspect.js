@@ -24,7 +24,7 @@
 // currently waiting for acceptance as a pull request https://github.com/joyent/node/pull/2360
 // It has to be run separately in each context anyway due to peculiarities with V8's contexts.
 
-_ = (function(global){
+(function(global){
 
 function widest(arr, field){
   return arr.reduce(function(a, b){
@@ -75,22 +75,22 @@ Object.defineProperties(String.prototype, {
   })
 })
 
-var styles;
+var builtins = {};
+var styles = {};
 
-function inspect(obj, options, styling) {
+function inspect(obj, options, globalSettings) {
   options = options || {};
   var settings = {
     showHidden: !!options.hiddens,
     showProtos: options.protos,
-    maxWidth: options.columns || 60,
-    colors: !!options.colors,
-    style: options.colors ? color : noColor,
+    showBuiltins: options.builtins,
+    maxWidth: globalSettings.columns || 60,
+    colors: !!globalSettings.colors,
+    style: globalSettings.colors ? color : noColor,
     sort: options.sort,
     depth: options.depth,
     seen: []
   };
-
-  styles = styling || styles;
 
   // cache formatted brackets
   settings.square = [
@@ -153,7 +153,6 @@ var errorToString = callbind(Error.prototype.toString);
 
 // formatter for functions shared with constructor formatter
 function functionLabel(fn, type) {
-
   return '[' + (isNative(fn) ? 'Native ' : '') + type + (fn.name ? ': ' + fn.name : '') + ']';
 }
 var noop = function(){}
@@ -192,8 +191,6 @@ function noColor(str, style, special) {
   return special ? '\u00AB' + str + '\u00BB' : str;
 }
 
-var builtins = [ 'Context', 'Object', 'Function', 'Array', 'String', 'Boolean', 'Number', 'Date', 'RegExp', 'Null',
-                 'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError' ];
 var objProto = Object.getOwnPropertyNames(Object.prototype).join();
 var numeric = /^\d+$/;
 var q = ['"', "'"];
@@ -234,7 +231,7 @@ function formatValue(value, key, depth, settings) {
   // prevent deeper inspection for primitives and regexps
   if (isPrimitive(value) || !settings.showHidden && (type === 'RegExp' || type === 'Error')) {
     if (type === 'String') {
-      var max = settings.maxWidth - key.alength - depth * 2 - 20
+      var max = settings.maxWidth - key.alength - depth * 2 - 10
       if (base.alength > max) {
         base = base.stripAnsi();
         base = settings.style(base.slice(0, max) + '...' + base[0], 'String');
@@ -243,12 +240,13 @@ function formatValue(value, key, depth, settings) {
     return base;
   }
 
-  // depth limit reached
-  if (depth < 0) {
-    return settings.style('More', 'More', true);
-  }
-
   var properties = Object[settings.showHidden ? 'getOwnPropertyNames' : 'keys'](value);
+
+  if (!settings.showBuiltins && value === global) {
+    properties = properties.filter(function(key){
+      return !~builtins.globals.indexOf(key);
+    });
+  }
 
   settings.sort && properties.sort();
 
@@ -267,26 +265,26 @@ function formatValue(value, key, depth, settings) {
     }
   }
 
-  if (properties.length === 0) {
-    // no properties so return '[]' or '{}'
-    if (base) return base;
-
-    if (!array || value.length === 0) return braces.join('');
-  }
-
   if (settings.showProtos && value !== global) {
     var proto = Object.getPrototypeOf(value);
     var ctor = proto && proto.constructor && proto.constructor.name;
     // don't list protos for built-ins
-    if (!~builtins.indexOf(ctor) || ctor === 'Object' && Object.getOwnPropertyNames(proto).join() !== objProto) {
+    if (!~builtins.classes.indexOf(ctor) || ctor === 'Object' && Object.getOwnPropertyNames(proto).join() !== objProto) {
       properties.push('__proto__');
     }
   }
 
+  if (properties.length === 0) {
+    if (base) return base;
+    if (!array || value.length === 0) return braces.join('');
+  }
+  if (depth < 0) {
+    return (base?base+' ':'') + settings.style('More', 'More', true);
+  }
+
+
   settings.seen.push(value);
-
   var output = [];
-
 
   try {
     if (Object.isFrozen(value)) {
@@ -318,7 +316,7 @@ function formatValue(value, key, depth, settings) {
     }
   });
 
-  return combine(output, base, braces, settings.maxWidth - key.alength - 6 - depth * 2);
+  return combine(output, base, braces, settings.maxWidth - 20 - depth * 2 - key.alength);
 }
 
 function formatProperty(value, key, depth, settings, array) {
@@ -491,12 +489,79 @@ function filter(obj, arr, include){
       Object.defineProperty(ret, name, Object.getOwnPropertyDescriptor(obj, name));
     }
     return ret;
-  },{});
+  }, {});
 }
 
-return {
-  inspect: inspect,
-  filter: filter
+function clone(obj){
+  return Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyNames(obj).reduce(function(r,s){
+    r[s] = Object.getOwnPropertyDescriptor(obj, s);
+    return r;
+  }, {}));
+}
+
+function compare(before, after){
+  var beforeProps = Object.getOwnPropertyNames(before);
+
+  var changed = beforeProps.reduce(function(r, s){
+    var desc = compareDesc(before, after, s);
+    if (Object.keys(desc).length) {
+      r[s] = desc;
+    }
+    return r;
+  }, {});
+
+  return Object.getOwnPropertyNames(after).reduce(function(r, s){
+    if (!~beforeProps.indexOf(s)) {
+      r[s] = Object.getOwnPropertyDescriptor(after, s);
+    }
+    return r
+  }, changed)
+}
+
+var descFields = ['get', 'set', 'value', 'enumerable', 'configurable', 'writeable'];
+
+function compareDesc(before, after, property){
+  before = Object.getOwnPropertyDescriptor(before, property) || {};
+  after = Object.getOwnPropertyDescriptor(after, property) || {};
+  return descFields.reduce(function(out, field){
+    if (!egal(before[field], after[field])) {
+      out[field] = after[field];
+    }
+    return out;
+  }, {})
+}
+
+function egal(a, b){
+  return a === b ? a !== 0 || 1 / a === 1 / b : a !== a && b !== b;
+}
+
+if ('Proxy' in global) {
+  Object.defineProperty(global, 'Proxy', { enumerable: false });
+}
+
+return function(options, globalSettings, builtinList, styleList){
+  builtins = builtinList;
+  styles = styleList;
+  var snapshots = {};
+  return {
+    snapshot: function snapshot(name){
+      if (!name) name = '_last';
+
+      if (name in snapshots) {
+        var diff = compare(snapshots[name], global);
+        delete snapshots[name];
+        return diff;
+      } else {
+        snapshots[name] = clone(global);
+      }
+    },
+    globals: function globals(){
+      return clone(global);
+    },
+    inspector: function inspector(obj){
+      return typeof obj === 'string' ? obj : inspect(obj, options, globalSettings);
+    }
+  }
 };
 
 })(this);

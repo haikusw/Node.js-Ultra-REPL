@@ -59,6 +59,28 @@ UltraRLI.prototype = {
     this.emit('resize');
   },
 
+  close: function close(d) {
+    if (this._closing) return;
+    this._closing = true;
+    if (this.enabled) {
+      tty.setRawMode(false);
+    }
+    this.emit('close');
+    this._closed = true;
+  },
+
+  pause: function pause() {
+    if (this.enabled) {
+      tty.setRawMode(false);
+    }
+  },
+
+  resume: function resume() {
+    if (this.enabled) {
+      tty.setRawMode(true);
+    }
+  },
+
   loadCursor: function loadCursor(){ this._ttyWrite('\x1b[1u') },
   saveCursor: function saveCursor(){ this._ttyWrite('\x1b[1s') },
   clearScreen: function clearScreen(){ this._ttyWrite('\x1b[1J') },
@@ -69,7 +91,7 @@ UltraRLI.prototype = {
     this.history.unshift(this.line);
     this.historyIndex = -1;
     if (this.history.length > 100) this.history.pop();
-    
+
     this.clearLine();
     return this.history[0];
   },

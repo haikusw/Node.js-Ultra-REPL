@@ -1,256 +1,151 @@
 var vm = require('vm');
-var path = require('path');
-var fs = require('fs');
 
-var loader = require('context-loader');
+var Script = require('./Script');
 
 var builtins = require('../lib/builtins');
-
 var style = require('../settings/styling');
 var defaults = require('../settings/options').inspector;
 var names = require('../settings/text').names;
 
-var nameColors = style.context.names;
-var nameIndex = 1;
-var inspector = loader.loadScript(path._makeLong(__dirname + '/inspect.js'));
+var inspector = new Script(__dirname + '/inspect.js');
 
-
-
-var contexts = new WeakMap;
-var scripts = new WeakMap;
-
-var runInThisContext = vm.runInThisContext;
-
-
-var tryContext = vm.createContext();
-run('this', tryContext);
-
-
+var contexts = [];
 
 module.exports = Context;
 
-function Context(isGlobal){
-  Object.keys(defaults).forEach(function(s){ this[s] = defaults[s] }, this);
-
-  this.initialize();
-
+function Context(globalSettings, isGlobal){
   if (isGlobal) {
     if (module.globalContext) return module.globalContext;
     Object.defineProperty(module, 'globalContext', { value: this });
-    this.isGlobal = true;
+
     this.name = 'global';
-
-
-    function Module(id, parent) {
-      this.id = id;
-      this.exports = {};
-      this.parent = parent;
-      this.filename = path.resolve(__dirname, '..');
-      this.loaded = true;
-      this.exited = false;
-      this.children = [];
-    }
-    Module.prototype.constructor = function Module(){};
-
-    var mod = new Module('.', null);
-    var req = function(req){ return function require(path){ return req(path) } }(require);
-
-    Object.getOwnPropertyNames(global).forEach(function(prop){
-      if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this.ctx)) {
-        Object.defineProperty(this.ctx, prop, Object.getOwnPropertyDescriptor(global, prop));
-      }
-    }, this);
-
-    Object.defineProperties(this.ctx, {
-      module:  { value: mod },
-      require: { value: req },
-      exports: { get: function( ){ return mod.exports; },
-                 set: function(v){ mod.exports = v;    } },
-      global:  { value: this.global, enumerable: true, writable: true, configurable: true },
-    });
-
-    run('this', this.ctx);
-
+    this.isGlobal = true;
   } else {
-    this.name = newName();
+    this.name = names.shift();
   }
+
+  Object.defineProperty(this, 'id', { value: contexts.length });
+
+  this.settings = Object.keys(defaults).reduce(function(r,s){
+    return r[s] = defaults[s], r;
+  }, {});
+
+  this.initialize(globalSettings);
 }
 
 Context.prototype = {
   constructor: Context,
 
-  get ctx(){ return contexts.get(this) },
-  set ctx(v){ contexts.set(this, v) },
+  get ctx(){ return contexts[this.id] },
+  set ctx(v){ contexts[this.id] = v },
 
-  initialize: function initialize(){
-    // initialize context
+  get lastResult(){ return this.history.length && this.history[this.history.length-1] },
+
+  initialize: function initialize(globalSettings){
     this.ctx = vm.createContext();
-    // the wrapper Context object is different from the actual global
-    Object.defineProperty(this, 'global', { value: run('this', this.ctx) });
+    Object.defineProperty(this, 'global', { value: vm.runInContext('this', this.ctx), writable: true });
 
-    // hide 'Proxy' if --harmony until V8 correctly makes it non-enumerable
-    'Proxy' in global && run('Object.defineProperty(this, "Proxy", { enumerable: false })', this.ctx);
-
-    this.createInspector();
-    scripts.set(this, []);
+    var init = inspector.run(this.ctx)(this.settings, globalSettings, builtins, style.inspector);
+    this.inspector = init.inspector;
+    this.getGlobals = init.globals;
+    this.snapshot = init.snapshot;
     this.history = [];
+    if (this.isGlobal) {
+      vm.runInContext('global = this', this.ctx);
+      Object.getOwnPropertyNames(global).forEach(function(prop){
+        if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this.ctx)) {
+          Object.defineProperty(this.ctx, prop, Object.getOwnPropertyDescriptor(global, prop));
+        }
+      }, this);
+      vm.runInContext('this', this.ctx);
+    }
     return this;
   },
 
-  createInspector: function createInspector(){
-    var uuid = UUID();
-    this.outputHandler(uuid);
-    run('_ = "' + uuid + '"', this.ctx);
-    inspector.runInContext(this.ctx);
+  view: function view(){
+    return new Success(this, new Script('this'), this.global);
   },
 
-  globals: function globals(){
-    return run('(function(g){return Object.getOwnPropertyNames(g).reduce(function(r,s){if(s!=="_")r[s]=g[s];return r},{})})(this)', this.ctx);
-  },
+  run: function run(script, callback){
+    if (typeof script === 'string') {
+      script = new Script(script);
+    }
+    if (script instanceof vm.Script) {
+      script = Script.wrap(script);
+    }
+    this.snapshot();
+    var outcome = script.run(this.ctx);
+    var globals = this.snapshot();
 
-  syntaxCheck: function syntaxCheck(src){
-    //src = (src || '').replace(/^\s*function\s*([_\w\$]+)/, '$1=function $1');
-    var result = parsify(src);
-    if (result === true) return src;
-    src += ';';
-    if (parsify(src) === true) return src;
-    src = '( ' + src + '\n)';
-    if (parsify(src) === true) return src;
-    return result;
-  },
-
-  runScript: function runScript(script){
-    scripts.get(this).push(script);
-    var globals = this.globals();
-    var result = {
-      completion: script.runInContext(this.ctx).result,
-      globals: diffObject(this.globals(), globals)
-    };
-    script.globals = Object.keys(result.globals);
-    this.history.push({
-      code: script.code,
-      result: result,
-      globals: script.globals
-    });
-    return result;
-  },
-
-  runCode: function runCode(code, filename){
-    return this.runScript(loader.wrap(code, filename));
-  },
-
-  runFile: function runFile(filename){
-    return this.runScript(loader.loadScript(filename));
+    if (outcome && outcome.error) {
+      var result = new Fail(this, script, outcome);
+    } else {
+      var result = new Success(this, script, outcome, globals);
+    }
+    if (callback) {
+      var self = this;
+      process.nextTick(function(){
+        self.history.push(result);
+        callback(result)
+      });
+    } else {
+      return result;
+    }
   },
 
   clone: function clone(){
-    var context = new (Object.getPrototypeOf(this).constructor);
-    context.builtins = this.builtins;
-    context.hiddens = this.hiddens;
-    context.colors = this.colors;
-    context.depth = this.depth;
-    this.scripts.forEach(context.runScript.bind(context));
-    return context;
-  },
-
-  outputHandler: function outputHandler(id){
-    var last, inspect, filter;
-    var handler = save;
-
-    function install(obj){
-      filter = obj.filter;
-      inspect = obj.inspect;
-      handler = save;
-    }
-
-    function save(obj){
-      last = obj;
-    }
-
-    var format = function(){
-      var obj = last;
-
-      if (obj === this.global) {
-        run('this', this.ctx);
-      }
-
-      if (!this.builtins && (obj === this.global || obj === this.ctx)) {
-        obj = filter(obj, builtins.all);
-      }
-
-      return inspect(obj, this, style.inspector);
-    }.bind(this);
-
-    Object.defineProperty(this.ctx, '_', {
-      get: function( ){ return format() },
-      set: function(v){
-        if (v === id) return handler = install;
-        handler(v);
-      }
+    var context = new this.constructor(this.isGlobal);
+    Object.keys(defaults).forEach(function(prop){
+      context[prop] = this[prop];
+    }, this);
+    this.history.forEach(function(event){
+      context.run(event.script);
     });
-  },
+    return context;
+  }
 };
 
-function inArray(arr, val){
-  return arr.some(function(s){ return egal(arr[s], val) });
+
+function Result(status, inspector, completion){
+  if (!(this instanceof Result)) return new Result(status, inspector, completion);
+  this.status = status;
+  this.inspector = inspector;
+  this.completion = completion;
 }
 
-function diffArray(arr, diff){
-  return arr.filter(function(s){ return !inArray(diff, s) });
-}
-
-function diffObject(obj, diff){
-  return Object.getOwnPropertyNames(obj).reduce(function(r,s){
-    if (!inObject(diff, obj[s])) {
-      r[s] = obj[s];
-    }
-    return r;
-  }, {});
-}
-
-function inObject(obj, val){
-  return Object.getOwnPropertyNames(obj).some(function(s){ return egal(obj[s], val) });
-}
-
-var descFields = ['get', 'set', 'value', 'enumerable', 'configurable', 'writeable'];
-
-function isDescriptor(obj){
-  if (obj && typeof obj === 'obj') {
-    var keys = Object.keys(obj);
-    if (keys.length < 7) {
-      return keys.all(function(key){
-        return !~descFields.indexOf(key);
-      });
-    }
+Result.prototype = {
+  completion: null,
+  globals: null,
+  error: null,
+  status: null,
+  script: null,
+  inspector: null,
+  isResult: true,
+  get _completion(){
+    return this.inspector && this.inspector(this.completion);
+  },
+  get _globals(){
+    return this.inspector && this.inspector(this.globals);
   }
-  return false;
+};
+
+function Success(context, script, completion, globals){
+  if (!(this instanceof Success)) return new Success(context, script, completion, globals);
+  globals = globals || {};
+  this.status = 'Success';
+  this.completion = completion;
+  this.globals = Object.keys(globals).length ? globals : null;
+  this.script = script;
+  this.inspector = context.inspector;
 }
 
+Success.prototype = Object.create(Result.prototype);
 
-function egal(a, b){
-  return a === b ? a !== 0 || 1 / a === 1 / b : a !== a && b !== b;
+function Fail(context, script, error){
+  if (!(this instanceof Fail)) return new Fail(script, error);
+  this.status = error.name;
+  this.error = error;
+  this.script = script;
 }
 
-
-function UUID(seed){
-  return seed ? (seed^Math.random() * 16 >> seed / 4).toString(16)
-              : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, UUID);
-}
-
-
-function run(code, ctx, name){
-  if (ctx === global) {
-    return runInThisContext(code, name || 'global');
-  } else {
-    return vm.runInContext(code, ctx, name);
-  }
-}
-
-function parsify(src){
-  try { return run('1&&function(){\n'+src+'\n}', tryContext), true; }
-  catch (e) { return e }
-}
-
-function newName(){
-  return names.shift().color(nameColors[nameIndex++ % nameColors.length]);
-}
+Fail.prototype = Object.create(Result.prototype);

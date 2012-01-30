@@ -1,5 +1,4 @@
 "use strict";
-require('harmony-collections').attachIfMissing(global);
 
 var util  = require('util');
 var path  = require('path');
@@ -26,6 +25,7 @@ var widest       = require('../lib/string-utils').widest;
 var chunk        = require('../lib/string-utils').chunk;
 
 
+var width = process.stdout._type === 'tty' ? process.stdout.getWindowSize()[0] : 60;
 
 module.exports.UltraREPL = UltraREPL;
 
@@ -36,8 +36,12 @@ function UltraREPL(options){
   options.stream = options.stream || process;
 
   monkeypatch.typedArrays(global);
-  var context = this.context = new Evaluator;
-  String.prototype.color.context = context;
+  this.settings = {
+    columns: width,
+    colors: process.stdout._type === 'tty'
+  };
+  String.prototype.color.context = this.settings;
+  var context = this.context = new Evaluator(this.settings);
 
   this.appPrompt = options.prompt || 'js';
   this.buffered = [];
@@ -76,75 +80,12 @@ function UltraREPL(options){
 
     function run(){
       if (!self.buffered.length) return self.updatePrompt();
-      var evaled = context.evaluate(self.buffered.join('\n'), finalize);
-      if (evaled.status === 'syntax_error') {
-        if (!finalize.errored) {
-          finalize.errored = true;
-        }
-        clearTimeout(finalize.syntax);
-        if (evaled.completion) {
-          finalize.syntax = setTimeout(function(){
-            finalize(evaled);
-          }, 500);
-        }
-        return self.updatePrompt();
-      }
+      context.run(self.buffered.join('\n'), finalize);
     }
 
-    function finalize(evaled){
-      if (typeof evaled === 'undefined') return;
-      finalize.errored = false;
-      clearTimeout(finalize.syntax);
-
-      var output = [];
-      var completion = 'completion' in evaled && evaled.completion;
-      var globals = 'globals' in evaled && evaled.globals;
-
-
-      if (evaled.status === 'error' || evaled.status === 'syntax_error') {
-        output.push((' '+completion.message).pad(self.width).color(style.errorbg));
-        if (evaled.status === 'error') {
-          var where = completion.stack.split('\n')[1].split(':');
-          where = {
-            line: where[where.length - 2] - 1,
-            col: where[where.length - 1] - 1
-          };
-          output.push(' '+self.buffered[where.line]+'\n '+' '.repeat(where.col) + '^');
-        } else {
-          output.push(self.buffered.join('\n'));
-        }
-      } else {
-
-        if (completion) {
-
-          if (typeof completion === 'string') {
-            evaled.text = completion;
-          } else {
-            self.context._ = completion;
-            output.push(' Result'.pad(self.width).color(style.inspector.header), self.context._);
-            if (typeof completion === 'function' && (completion+'').slice(-17) !== '{ [native code] }') {
-              output.push(' Function Source'.pad(self.width).color(style.inspector.header), highlight(completion));
-            }
-          }
-        }
-
-        if (globals && Object.keys(globals).length) {
-          self.context._ = globals;
-          output.push(' New Globals'.pad(self.width).color(style.inspector.header), self.context._);
-        }
-
-        if (evaled.text) {
-          output.push(' Text'.pad(self.width).color(style.inspector.header), evaled.text.color(style.inspector.String));
-        }
-      }
-
-      if (!output.length) {
-        self.context._ = 'completion' in evaled ? evaled.completion : evaled;
-        output.push(self.context._);
-      }
-
-      self.inspector(output.join('\n\n'));
-
+    function finalize(result){
+      clearTimeout(run.timeout);
+      self.writer(result);
       self.resetInput();
     }
   });
@@ -153,7 +94,7 @@ function UltraREPL(options){
 
   var handler = function(action, cmd, params){
     var result = action.call(self, cmd, params);
-    typeof result !== 'undefined' && self.inspector(result);
+    typeof result !== 'undefined' && self.writer(result);
   };
 
   this.commands.on('keybind', handler);
@@ -165,12 +106,17 @@ function UltraREPL(options){
   this.loadScreen();
 }
 
+function header(text, color){
+  return (' ' + text).pad(width).color(color);
+}
+
 
 UltraREPL.prototype = {
   constructor: UltraREPL,
 
   get height(){ return this.rli.height },
   get width(){ return this.rli.width },
+  get currentSettings(){ return this.context.current.settings },
 
   loadScreen: function loadScreen(){
     this.rli.fill();
@@ -234,36 +180,73 @@ UltraREPL.prototype = {
   clear: function clear(){
     var results = new Results;
     this.pages = results.bisect(this.height - 2);
-    this.rli.writePage(this.pages.get(0));
+    this.rli.writePage(this.pages[0]);
+  },
+
+  format: function format(result){
+    var output = [];
+
+    if (result.error) {
+      output.push(header(result.error.message, style.errorbg));
+      if (result.status === 'SyntaxError') {
+        output.push(result.script.code);
+      } else {
+        var where = result.error.stack.split('\n')[1].split(':');
+        var line = where[where.length - 2] - 1;
+        var column = where[where.length - 1] - 1;
+        output.push(' '+result.script.code.split('\n')[line]+'\n '+' '.repeat(column) + '^');
+      }
+    }
+
+    if (result.completion) {
+      //output.push(header('Result', style.inspector.header));
+      output.push(result._completion);
+      if (typeof result.completion === 'function') {
+        var code = result.completion+'';
+        if (code.slice(-17) !== '{ [native code] }') {
+          output.push(header('Function Source', style.inspector.header));
+          output.push(highlight(code));
+        }
+      }
+    }
+
+    if (result.globals) {
+      output.push(header('Globals', style.inspector.header));
+      output.push(result._globals);
+    }
+
+    if (!output.length) {
+      //output.push(header('Result', style.inspector.header));
+      output.push(result._completion);
+    }
+
+    return output.join('\n\n');
   },
 
   refresh: function refresh(){
-    this.inspector();
+    this.writer(this.context.lastResult);
     this.updatePrompt();
   },
 
-  inspector: function inspector(obj){
-    if (obj) {
-      if (typeof obj === 'string') {
-        var output = obj;
+  writer: function writer(output){
+    if (output && typeof output === 'object') {
+      if (output.isResult) {
+        output = this.format(output);
       } else {
-        this.context._ = obj;
-        var output = this.context._;
+        output = this.context.inspector(output);
       }
-    } else {
-      var output = this.context._;
     }
 
     var results = new Results(output);
     this.pages = results.bisect(this.height - 2);
     this.pageLabel();
-    this.rli.writePage(this.pages.get(0));
+    this.rli.writePage(this.pages[0]);
     this.resetInput();
   },
 
   pageLabel: function pageLabel(){
-    var page = this.pages.count();
-    page = page > 1 ? (this.pages.iterator.current + 1) + '/' + page : '';
+    var page = this.pages.length;
+    page = page > 1 ? (this.pages.index + 1) + '/' + page : '';
     this.rli.writeMount('topcenter', page.color(style.info.page), style.info.header);
   },
 

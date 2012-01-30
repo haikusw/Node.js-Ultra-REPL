@@ -3,7 +3,7 @@ module.exports = [
     help: 'Next page of results.',
     defaultTrigger: { type: 'keybind', trigger: 'pgdn' },
     action: function(){
-      if (this.pages.count() > 0) {
+      if (this.pages.length) {
         this.rli.writePage(this.pages.next());
         this.header();
       }
@@ -13,8 +13,8 @@ module.exports = [
     help: 'Previous page of results.\n',
     defaultTrigger: { type: 'keybind', trigger: 'pgup' },
     action: function(){
-      if (this.pages.count() > 0) {
-        this.rli.writePage(this.pages.previous());
+      if (this.pages.length) {
+        this.rli.writePage(this.pages.prev());
         this.header();
       }
     }

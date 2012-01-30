@@ -3,8 +3,7 @@ module.exports = {
     builtins: true,
     hiddens: false,
     protos: true,
-    depth: 4,
-    colors: true
+    depth: 4
   },
   autoload: [
     'basic',

@@ -48,7 +48,7 @@ module.exports = [
     help: 'Shortcut for writing `this` to inspect the current context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+z' },
     action: function(){
-      return this.context.global;
+      return this.context.view();
     }
   },
   { name: 'Clear Input/Screen',

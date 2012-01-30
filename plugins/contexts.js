@@ -4,7 +4,7 @@ var style = require('../settings/styling');
 
 
 
-function injectNodeBuiltins(){
+function nodeBuiltins(){
   this.context.ctx.global = this.context.global;
   builtins.node.forEach(function(name){
     Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
@@ -12,7 +12,7 @@ function injectNodeBuiltins(){
   this.refresh();
 }
 
-function contexCommand(action){
+function contextCommand(action){
   return function(){
     var result = this.context[action]();
     if (isError(result)) {
@@ -21,8 +21,7 @@ function contexCommand(action){
       result = action.color(style.context[action]) + ' ' + result.name;
     }
     this.rli.timedWrite('topright', result, 'bgbblack');
-    this.context._ = this.context.global;
-    this.refresh();
+    return this.context.view();
   }
 }
 
@@ -31,40 +30,32 @@ module.exports = [
     help: 'Add the default Node global variables to the current context. This includes process, console, '+
           'Buffer, and the various ArrayBuffer functions.',
     defaultTrigger: { type: 'keybind', trigger: 'alt+a' },
-    action: injectNodeBuiltins
+    action: nodeBuiltins
   },
   { name: 'Create Context',
     help: 'Create, initialize, and switch into a new V8 context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+shift+up' },
-    action: contexCommand('create')
+    action: contextCommand('create')
   },
   { name: 'Delete Context',
     help: 'Delete the current V8 context and all objects unreferences externally.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+shift+down' },
-    action: contexCommand('remove')
+    action: contextCommand('remove')
   },
   { name: 'Reset Context',
     help: 'Reset current context.',
     defaultTrigger: { type: 'command', trigger: '.r' },
-    action: contexCommand( 'reset')
+    action: contextCommand( 'reset')
   },
   { name: 'Next Context',
-    help: 'Switch to the previous next.',
+    help: 'Switch to the Next context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+up' },
-    action: function(){
-      this.context.change(1);
-      this.context.ctx._ = this.context.global;
-      this.refresh();
-    }
+    action: contextCommand( 'next')
   },
   { name: 'Previous Context',
     help: 'Switch to the previous context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+down' },
-    action: function(){
-      this.context.change(-1);
-      this.context.ctx._ = this.context.global;
-      this.refresh();
-    }
+    action: contextCommand( 'prev')
   },
   { name: 'Label Context',
     help: 'Change the label of the current context.\n',

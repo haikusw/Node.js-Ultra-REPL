@@ -361,13 +361,13 @@ function formatValue(value, key, depth, settings) {
   // properties on objects and named array properties
   properties.forEach(function(key) {
     if (!array || !numeric.test(key)) {
-      primitive = primitive && isPrimitive(value[key]);
+      //primitive = primitive && isPrimitive(value[key]);
       var prop = formatProperty(value, key, depth, settings, array);
       prop.length && output.push(prop);
     }
   });
 
-  return combine(output, base, braces, maxwidth, primitive || settings.multiItemLines);
+  return combine(output, base, braces, maxwidth, settings.multiItemLines);
 }
 
 function formatProperty(value, key, depth, settings, array) {

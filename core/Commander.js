@@ -1,63 +1,13 @@
-var util = require('util');
-var fs = require('fs');
-var path = require('path');
 var EventEmitter = require('events').EventEmitter;
 
 var Dict = require('../lib/Dict');
-var heritable = require('../lib/object-utils').heritable;
 
+var options = require('../settings/options');
 var style = require('../settings/styling');
 
-module.exports = heritable({
-  constructor: Commander,
-  super: EventEmitter,
 
-  loadControls: function loadControls(file){
-    var controls = require(file);
-    return controls(
-      function(x){ return { type: 'keyword', trigger: x } },
-      function(x){ return { type: 'command', trigger: x } },
-      function(x){ return { type: 'keybind', trigger: x } }
-    );
-  },
 
-  loadPlugin: function loadPlugin(name){
-    var commands = require(path.resolve(__dirname, '../plugins', name));
-
-    return commands.map(function(command){
-      var control = this.controls[command.name] || command.defaultTrigger;
-
-      if (control.type) {
-        this.handlers[control.type](control.trigger, command.action);
-      }
-
-      if (control.type === 'keybind' && process.platform === 'darwin') {
-        control && (control.trigger = control.trigger.replace('ctrl+', 'command+'));
-      }
-
-      return {
-        name: command.name,
-        help: command.help,
-        type: control.type,
-        trigger: control.trigger
-      };
-    }, this);
-  },
-
-  keyword: function keyword(cmd){
-    if (this.keywords.has(cmd)) {
-      this.emit('keyword', this.keywords[cmd], cmd, cmd);
-      return true;
-    } else {
-      var m = cmd.match(/^([^\s]+)\s+(.*)$/);
-      if (m !== null && this.keywords.has(m[1])) {
-        this.emit('keyword', this.keywords[m[1]], m[1], m[2]);
-        return true;
-      }
-    }
-    return false;
-  },
-});
+module.exports = Commander;
 
 
 function Commander(rli){
@@ -114,7 +64,59 @@ function Commander(rli){
 
   this.help = [];
 
-  require('../settings/options').autoload.forEach(function(name){
+  options.autoload.forEach(function(name){
     this.help.push.apply(this.help, this.loadPlugin(name));
   }, this);
 }
+
+
+Commander.prototype = {
+  constructor: Commander,
+  __proto__: EventEmitter.prototype,
+
+  loadControls: function loadControls(file){
+    var controls = require(file);
+    return controls(
+      function(x){ return { type: 'keyword', trigger: x } },
+      function(x){ return { type: 'command', trigger: x } },
+      function(x){ return { type: 'keybind', trigger: x } }
+    );
+  },
+
+  loadPlugin: function loadPlugin(name){
+    var commands = require('../plugins/' + name);
+
+    return commands.map(function(command){
+      var control = this.controls[command.name] || command.defaultTrigger;
+
+      if (control.type) {
+        this.handlers[control.type](control.trigger, command.action);
+      }
+
+      if (control.type === 'keybind' && process.platform === 'darwin') {
+        control && (control.trigger = control.trigger.replace('ctrl+', 'command+'));
+      }
+
+      return {
+        name: command.name,
+        help: command.help,
+        type: control.type,
+        trigger: control.trigger
+      };
+    }, this);
+  },
+
+  keyword: function keyword(cmd){
+    if (this.keywords.has(cmd)) {
+      this.emit('keyword', this.keywords[cmd], cmd, cmd);
+      return true;
+    } else {
+      var m = cmd.match(/^([^\s]+)\s+(.*)$/);
+      if (m !== null && this.keywords.has(m[1])) {
+        this.emit('keyword', this.keywords[m[1]], m[1], m[2]);
+        return true;
+      }
+    }
+    return false;
+  },
+};

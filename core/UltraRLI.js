@@ -26,13 +26,15 @@ function UltraRLI(stream, completer){
   this.enabled = output.isTTY && !parseInt(process.env['NODE_NO_READLINE'], 10);
 
   if (!this.enabled) {
-    input.on('data', function(){ self._normalWrite.apply(self, arguments) });
+    input.on('data', function(data){ self._normalWrite(data) });
   } else {
+    input.on('keypress', function(s, key){ self._ttyWrite(s, key) });
     tty.setRawMode(true);
-    input.on('keypress', function(){ self._ttyWrite.apply(self, arguments) });
     this.cursor = 0;
     this.history = [];
     this.historyIndex = -1;
+    this._promptLength = 0;
+    this._prompt = '';
     this.resize.last = [];
     this.resize();
 
@@ -81,9 +83,9 @@ UltraRLI.prototype = {
     }
   },
 
-  loadCursor: function loadCursor(){ this._ttyWrite('\x1b[1u') },
-  saveCursor: function saveCursor(){ this._ttyWrite('\x1b[1s') },
-  clearScreen: function clearScreen(){ this._ttyWrite('\x1b[1J') },
+  loadCursor: function loadCursor(){ this.output.write('\x1b[1u') },
+  saveCursor: function saveCursor(){ this.output.write('\x1b[1s') },
+  clearScreen: function clearScreen(){ this.output.write('\x1b[1J') },
 
   _addHistory: function _addHistory() {
     if (this.line.length === 0) return '';
@@ -124,36 +126,33 @@ UltraRLI.prototype = {
   },
 
   fill: function fill(minus){
-    var cursor = this.cursor;
     this.output.cursorTo(0, 0);
     this.output.write('\n'.repeat(this.height - minus));
-    this.cursor = cursor;
     this.toCursor();
   },
 
+  eraseInput: function eraseInput(){
+    this.output.cursorTo(0, this.height);
+    this.output.clearLine();
+    this.output.moveCursor(-this.width);
+  },
+
   clearLine: function clearLine(){
-    if (this._closed) return;
     this.cursor = 0;
     this.line = '';
-    this.output.clearLine();
-    this.output.cursorTo(0);
+    this.eraseInput();
   },
 
   clearInput: function clearInput(){
-    if (this._closed) return;
+    this.cursor = 0;
     this.line = '';
-    this.output.cursorTo(0, this.height);
-    this.output.clearLine();
-    this.output.write(this._prompt);
-    this.home();
+    this.refreshLine();
   },
 
   refreshLine: function refreshLine(){
-    if (this._closed) return;
-    this.output.cursorTo(0, this.height);
-    this.output.clearLine();
+    this.eraseInput();
     this.output.write(this._prompt + this.line);
-    this.toCursor()
+    this.toCursor();
   },
 
   toCursor: function toCursor(){
@@ -359,10 +358,20 @@ UltraRLI.prototype = {
     return key;
   },
 
+  write: function write(d, key) {
+    if (this._closed) return;
+    this.enabled ? this._ttyWrite(d, key) : this._normalWrite(d, key);
+  },
+
+  _normalWrite: function _normalWrite(b) {
+    if (b !== undefined)
+      this._onLine(b.toString());
+  },
+
   _ttyWrite: function _ttyWrite(s, key){
     key = this.translate(s, key);
     this.emit('keybind', key);
-    if (key.used) return;
+    if (key.used || key.ctrl || key.meta) return;
 
     if (Buffer.isBuffer(s)) {
       s = s.toString('utf8');

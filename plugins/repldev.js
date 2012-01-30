@@ -8,7 +8,6 @@ function toggle(obj, prop){
       var result = (this[obj][prop] ^= true);
     }
     result = result ? '++' : '--';
-    this.refresh();
     this.timedPrompt(result + (prop || obj), style.prompt[result]);
   }
 }

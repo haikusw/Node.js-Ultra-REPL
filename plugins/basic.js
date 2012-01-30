@@ -1,4 +1,3 @@
-var vm = require('vm');
 var builtins = require('../lib/builtins');
 
 module.exports = [
@@ -22,10 +21,7 @@ module.exports = [
     }
   },
   { name: 'Require',
-    help: 'Require for contexts without exposing require to the context.\n'+
-          '".req lib"      -> `global.lib = require("lib")`,\n'+
-          '".req lib"      -> `global[require("lib").name] = require("lib")`,\n'+
-          '".req name lib" -> `global.name = require("lib")`',
+    help: 'Require for contexts without exposing require to the context.',
     defaultTrigger: { type: 'command', trigger: '.req' },
     action: function(cmd, input){
       var parts = input.split(' ');
@@ -64,7 +60,7 @@ module.exports = [
     action: call('resetScreen')
   },
   { name: 'Exit',
-    help: 'Exit the REPL.\n',
+    help: 'Exit the REPL.',
     defaultTrigger: { type: 'keybind', trigger: 'esc esc esc' },
     action: function(){
       this.rli.close();

@@ -71,8 +71,6 @@ function UltraREPL(options){
     }
   });
 
-  this.pages = new Results;
-
   rli.on('close', function(){ stream.input.destroy() });
   rli.on('resize', function(){ self.refresh() });
   rli.on('keybind', function(key){
@@ -108,9 +106,10 @@ function UltraREPL(options){
   this.commands.on('keybind', handler);
   this.commands.on('keyword', handler);
 
-  this.context.columns = this.width - 30;
-  this.updatePrompt();
+  this.pages = new Results;
+  this.header();
   this.loadScreen();
+  this.updatePrompt();
 }
 
 function header(text, color){
@@ -126,8 +125,6 @@ UltraREPL.prototype = {
   get currentSettings(){ return this.context.current.settings },
 
   loadScreen: function loadScreen(){
-    this.rli.fill();
-    this.resetScreen();
 
     var intro = text.intro.map(function(s){
       return s[0].color(style.intro[0]) + ' ' + s[1].color(style.intro[1]);
@@ -141,19 +138,17 @@ UltraREPL.prototype = {
     intro.push('', seehelp);
 
     this.rli.writeFrom(intro, (this.width - intro[0].alength) / 2 | 0, (this.height - 2 - intro.length) / 2 | 0);
-    this.header();
   },
 
   resetInput: function resetInput(){
     this.buffered = [];
     this.rli.clearInput();
-    this.updatePrompt();
   },
 
   resetScreen: function resetScreen(){
     this.rli.clearScreen();
-    this.resetInput();
-    this.pageLabel();
+    this.header();
+    this.rli.refreshLine();
   },
 
   displayPrompt: function displayPrompt(){
@@ -161,10 +156,8 @@ UltraREPL.prototype = {
   },
 
   showHelp: function showHelp(info){
-    this.rli.clearScreen();
-    this.header();
-    this.rli.writeFrom(this.generateHelp(info || this.commands.help, this.width));
-    this.resetInput();
+    this.resetScreen();
+    this.writer(this.generateHelp(info || this.commands.help, this.width));
   },
 
   updatePrompt: function updatePrompt(){
@@ -236,15 +229,19 @@ UltraREPL.prototype = {
   },
 
   writer: function writer(output){
-    if (output && typeof output === 'object') {
-      if (output.isResult) {
-        output = this.format(output);
-      } else {
-        output = this.context.inspector(output);
+    if (output instanceof Results) {
+      this.pages = output;
+    } else {
+      if (output && typeof output === 'object') {
+        if (output.isResult) {
+          output = this.format(output);
+        } else {
+          output = this.context.inspector(output);
+        }
       }
+      this.pages = new Results(output);
     }
 
-    this.pages = new Results(output);
     this.pageLabel();
     this.rli.writePage(this.pages[0]);
   },
@@ -275,25 +272,27 @@ UltraREPL.prototype = {
     var helpL = nameW + triggerW + 2;
     var helpR = screenW - nameW - triggerW - 8;
     var last = 0;
-    return help.filter(function(cmd){ return cmd.help }).map(function(cmd){
-      var output = {
+    return new Results(help.filter(function(cmd){ return cmd.help }).reduce(function(lines, cmd){
+      var out = {
         help: cmd.help.color((last ^= 1) ? 'bwhite' : 'bblack'),
         type: cmd.type,
         trigger: cmd.trigger || '',
-        name: cmd.name
+        name: ' ' + cmd.name
       };
 
-      if (output.type === 'keywords') {
-        output.help += '\n' + chunk(', ', helpR, helpL + 2, output.trigger).color(style.help.keywords);
-        output.trigger = '';
+      if (out.type === 'keywords') {
+        out.help += '\n' + chunk(', ', helpR, helpL + 2, out.trigger).color(style.help.keywords);
+        out.trigger = '';
       } else {
-        output.help = output.help.align(helpR, helpL);
+        out.help = out.help.align(helpR, helpL);
       }
-      return '  ' + output.name.pad(nameW).color(style.help.names) +
-             output.trigger.pad(triggerW).color(style.help[output.type]) +
-             output.help;
+      out = out.name.pad(nameW).color(style.help.names) +
+            out.trigger.pad(triggerW).color(style.help[out.type]) +
+            out.help;
 
-    });
+      lines.push.apply(lines, out.split('\n'));
+      return lines;
+    }, []));
   }
 };
 

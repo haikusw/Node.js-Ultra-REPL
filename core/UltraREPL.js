@@ -184,10 +184,10 @@ UltraREPL.prototype = {
       if (result.status === 'SyntaxError') {
         output.push(result.script.code);
       } else {
-        var where = result.error.stack.split('\n')[1].split(':');
-        var line = where[where.length - 2] - 1;
-        var column = where[where.length - 1] - 1;
-        output.push(' '+result.script.code.split('\n')[line]+'\n '+' '.repeat(column) + '^');
+          var where = result.error.stack.split('\n')[1].split(':');
+          var line = where[where.length - 2] - 1;
+          var column = where[where.length - 1] - 1;
+          output.push(' '+result.script.code.split('\n')[line]+'\n '+' '.repeat(column) + '^');
       }
     }
 

@@ -90,7 +90,7 @@ Context.prototype = {
     var globals = this.snapshot();
 
     if (outcome && outcome.error) {
-      var result = new Fail(this, script, outcome);
+      var result = new Fail(this, script, outcome.error);
     } else {
       var result = new Success(this, script, outcome, globals);
     }
@@ -154,7 +154,7 @@ function Success(context, script, completion, globals){
 Success.prototype = Object.create(Result.prototype);
 
 function Fail(context, script, error){
-  if (!(this instanceof Fail)) return new Fail(script, error);
+  if (!(this instanceof Fail)) return new Fail(context, script, error);
   this.status = error.name;
   this.error = error;
   this.script = script;

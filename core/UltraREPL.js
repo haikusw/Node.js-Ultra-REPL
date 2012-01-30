@@ -1,11 +1,7 @@
 "use strict";
 
-var util  = require('util');
-var path  = require('path');
-var fs    = require('fs');
-var vm    = require('vm');
-
-require('../lib/string-utils').attachTo(String.prototype);
+var str = require('../lib/string-utils');
+str.attachTo(String.prototype);
 
 var Commander    = require('./Commander');
 var UltraRLI     = require('./UltraRLI');
@@ -20,9 +16,6 @@ var builtins     = require('../lib/builtins');
 
 var style        = require('../settings/styling');
 var text         = require('../settings/text');
-
-var widest       = require('../lib/string-utils').widest;
-var chunk        = require('../lib/string-utils').chunk;
 
 
 var width = process.stdout._type === 'tty' ? process.stdout.getWindowSize()[0] : 60;
@@ -54,7 +47,7 @@ function UltraREPL(options){
     output: options.stream.stdout || options.stream,
   };
 
-  //monkeypatch.fixEmitKey(stream.input);
+  monkeypatch.fixEmitKey(stream.input);
 
   var complete = function(){};
   var rli = new UltraRLI(stream, complete);
@@ -267,8 +260,8 @@ UltraREPL.prototype = {
   },
 
   generateHelp: function generateHelp(help, screenW){
-    var nameW = widest(help, 'name') + 2;
-    var triggerW = widest(help, 'trigger') + 2;
+    var nameW = str.widest(help, 'name') + 2;
+    var triggerW = str.widest(help, 'trigger') + 2;
     var helpL = nameW + triggerW + 2;
     var helpR = screenW - nameW - triggerW - 8;
     var last = 0;
@@ -281,7 +274,7 @@ UltraREPL.prototype = {
       };
 
       if (out.type === 'keywords') {
-        out.help += '\n' + chunk(', ', helpR, helpL + 2, out.trigger).color(style.help.keywords);
+        out.help += '\n' + str.chunk(', ', helpR, helpL + 2, out.trigger).color(style.help.keywords);
         out.trigger = '';
       } else {
         out.help = out.help.align(helpR, helpL);

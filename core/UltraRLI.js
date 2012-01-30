@@ -1,9 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
-var util = require('util');
 var tty = require('tty');
-
-
-require('../lib/string-utils').attachTo(String.prototype);
 
 
 

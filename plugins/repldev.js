@@ -35,23 +35,19 @@ module.exports = [
 
       var names = String.prototype.color.names.slice(0, String.prototype.color.names.length / 2);
 
-      names.shift()
+      names.shift();
       var width = names.join('  ').length;
 
       var ansi = [];
 
       ansi[0] = names.map(function(c){ return c.color(c) });
       ansi[1] = names.map(function(c){ return c.color(['bg'+c,'bwhite'])});
-      // ansi[2] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color(c) });
-      // ansi[3] = names.map(function(c){ return (c.slice(0, c.length / 2) + c.slice(c.length / 2).color('reverse')).color('bg'+c) });
 
       this.output.cursorTo(((this.width - width) / 2) | 0, ((this.height - ansi.length) / 2) | 0);
       ansi.forEach(function(s){
         this.output.write(s.join('  '));
         this.output.moveCursor(-width, 1);
       }, this);
-
-      require('fs').writeFileSync('ansi.txt', ansi.join('\n'));
 
       this.displayPrompt();
     }

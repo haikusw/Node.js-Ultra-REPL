@@ -18,10 +18,13 @@ function contextCommand(action){
     if (isError(result)) {
       result = result.message.color(style.error);
     } else {
-      result = action.color(style.context[action]) + ' ' + result.name;
+      result = action.color(style.context[action]) + ' ' + result.displayName;
     }
-    this.rli.timedWrite('topright', result, 'bgbblack');
-    return this.context.view();
+    this.writer(this.context.view());
+    if (action in style.context) {
+      this.rli.timedWrite('topright', result, 'bgbblack');
+    }
+    this.updatePrompt();
   }
 }
 

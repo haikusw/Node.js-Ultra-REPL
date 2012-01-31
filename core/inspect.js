@@ -164,14 +164,14 @@ var ansi = {
   bgmagenta   : [  '45',    '49'],
   bgcyan      : [  '46',    '49'],
   bgwhite     : [  '47',    '49'],
-  bgbblack    : [  '90', '25;49'],
-  bgbred      : [  '91', '25;49'],
-  bgbgreen    : [  '92', '25;49'],
-  bgbyellow   : [  '93', '25;49'],
-  bgbblue     : [  '94', '25;49'],
-  bgbmagenta  : [  '95', '25;49'],
-  bgbcyan     : [  '96', '25;49'],
-  bgbwhite    : [  '97', '25;49']
+  bgbblack    : [ '100', '25;49'],
+  bgbred      : [ '101', '25;49'],
+  bgbgreen    : [ '102', '25;49'],
+  bgbyellow   : [ '103', '25;49'],
+  bgbblue     : [ '104', '25;49'],
+  bgbmagenta  : [ '105', '25;49'],
+  bgbcyan     : [ '106', '25;49'],
+  bgbwhite    : [ '107', '25;49']
 };
 
 
@@ -543,16 +543,6 @@ function isNative(o){
 
 
 
-function filter(obj, arr, include){
-  include = +!!include;
-  return Object.getOwnPropertyNames(obj).reduce(function(ret, name){
-    if (include - !~arr.indexOf(name)) {
-      Object.defineProperty(ret, name, Object.getOwnPropertyDescriptor(obj, name));
-    }
-    return ret;
-  }, {});
-}
-
 function clone(obj){
   return Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyNames(obj).reduce(function(r,s){
     r[s] = Object.getOwnPropertyDescriptor(obj, s);
@@ -565,18 +555,21 @@ function compare(before, after){
 
   var changed = beforeProps.reduce(function(r, s){
     var desc = compareDesc(before, after, s);
-    if (Object.keys(desc).length) {
-      r[s] = desc;
+    if (desc[0] === 'deleted' || desc.length === 1 && typeof desc[0] !== 'string') {
+      r[s] = desc[0];
+    } else if (desc.length) {
+      r[s] = desc.join(' | ');
     }
     return r;
   }, {});
 
   return Object.getOwnPropertyNames(after).reduce(function(r, s){
     if (!~beforeProps.indexOf(s)) {
-      r[s] = Object.getOwnPropertyDescriptor(after, s);
+      var desc = Object.getOwnPropertyDescriptor(after, s);
+      Object.defineProperty(r, s, desc);
     }
-    return r
-  }, changed)
+    return r;
+  }, changed);
 }
 
 var descFields = ['get', 'set', 'value', 'enumerable', 'configurable', 'writeable'];
@@ -586,10 +579,20 @@ function compareDesc(before, after, property){
   after = Object.getOwnPropertyDescriptor(after, property) || {};
   return descFields.reduce(function(out, field){
     if (!egal(before[field], after[field])) {
-      out[field] = after[field];
+      var val;
+      if (field === 'value') {
+        val = typeof after.value === 'undefined' ? 'deleted' : after.value;
+      } else {
+        if (/^[gs]et$/.test(field)) {
+          val = before[field] ? after[field] ? after[field] : '--'+field : '++'+field;
+        } else {
+          val = (after[field] ? '++' : '--') + field;
+        }
+      }
+      out.push(val);
     }
     return out;
-  }, {})
+  }, [])
 }
 
 function egal(a, b){

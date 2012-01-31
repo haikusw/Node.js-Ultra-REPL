@@ -20,6 +20,7 @@ Evaluator.prototype = {
   get count(){ return this.contexts.length },
   get current(){ return this.contexts.current },
   get inspector(){ return this.contexts.current.inspector },
+  get displayName(){ return this.contexts.current[this.settings.colors ? 'displayName' : 'name'] },
   get global(){ return this.contexts.current.global },
   get name(){ return this.contexts.current.name },
   get ctx(){ return this.contexts.current.ctx },

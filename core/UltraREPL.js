@@ -78,8 +78,10 @@ function UltraREPL(options){
     run.timeout = setTimeout(run, 20);
 
     function run(){
+      clearTimeout(run.timeout);
       if (!self.buffered.length) return self.updatePrompt();
       context.run(self.buffered.join('\n'), finalize);
+      self.buffered = [];
     }
 
     function finalize(result){
@@ -100,8 +102,8 @@ function UltraREPL(options){
   this.commands.on('keyword', handler);
 
   this.pages = new Results;
-  this.header();
   this.loadScreen();
+  this.header();
   this.updatePrompt();
 }
 
@@ -156,8 +158,9 @@ UltraREPL.prototype = {
 
   updatePrompt: function updatePrompt(){
     var prompt = [this.appPrompt];
-    if (this.context.length) {
-      prompt.push((this.context.index + 1 + '').color(style.prompt.number) + ' ' + this.context.name);
+    if (this.context.count) {
+      prompt.push((this.context.index + 1 + '').color(style.prompt.number) + ' ' + this.context.displayName);
+
     }
     if (this.messages) {
       prompt.push(this.messages);
@@ -191,8 +194,13 @@ UltraREPL.prototype = {
       }
     }
 
+    if (result.globals) {
+      output.push(header('Globals', style.inspector.header));
+      output.push(result._globals);
+    }
+
     if (result.completion) {
-      //output.push(header('Result', style.inspector.header));
+      if (result.globals) output.push(header('Result', style.inspector.header));
       output.push(result._completion);
       if (typeof result.completion === 'function') {
         var code = result.completion+'';
@@ -201,11 +209,6 @@ UltraREPL.prototype = {
           output.push(highlight(code));
         }
       }
-    }
-
-    if (result.globals) {
-      output.push(header('Globals', style.inspector.header));
-      output.push(result._globals);
     }
 
     if (!output.length) {
@@ -236,8 +239,9 @@ UltraREPL.prototype = {
       this.pages = new Results(output);
     }
 
-    this.pageLabel();
     this.rli.writePage(this.pages[0]);
+    this.header();
+    this.updatePrompt();
   },
 
   pageLabel: function pageLabel(){

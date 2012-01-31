@@ -64,6 +64,7 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'esc esc esc' },
     action: function(){
       this.rli.close();
+      process.exit();
     }
   }
 ];

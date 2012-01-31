@@ -6,6 +6,7 @@ var builtins = require('../lib/builtins');
 var style = require('../settings/styling');
 var defaults = require('../settings/options').inspector;
 var names = require('../settings/text').names;
+var namecolors = style.context.names;
 
 var inspector = new Script(__dirname + '/inspect.js');
 
@@ -26,7 +27,10 @@ function Context(globalSettings, isGlobal){
     this.name = names.shift();
   }
 
-  Object.defineProperty(this, 'id', { value: contexts.length });
+  Object.defineProperties(this, {
+    id: { value: contexts.length },
+    displayName: { value: this.name.color(namecolors[contexts.length % namecolors.length]) }
+  });
 
   this.settings = Object.keys(defaults).reduce(function(r,s){
     return r[s] = defaults[s], r;

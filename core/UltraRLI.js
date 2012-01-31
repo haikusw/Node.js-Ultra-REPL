@@ -178,7 +178,7 @@ UltraRLI.prototype = {
   },
 
   writeFrom: function writeFrom(output, left, top){
-    output = typeof output === 'string' ? output.split(/\r\n|\n|\r/) : output;
+    output = typeof output === 'string' ? output.split(CRLF) : output;
     top = top > 0 ? top : 0;
     left = left || 0;
     this.output.cursorTo(left, top + 1);
@@ -322,10 +322,41 @@ UltraRLI.prototype = {
     }
   },
 
+  _deleteWordLeft: function _deleteWordLeft() {
+    if (this.cursor) {
+      var leading = this.line.slice(0, this.cursor);
+      var match = leading.match(wordLeft);
+      leading = leading.slice(0, leading.length - match[0].length);
+      this.line = leading + this.line.slice(this.cursor, this.line.length);
+      this.cursor = leading.length;
+      this.refreshLine();
+    }
+  },
+
+  _deleteWordRight: function _deleteWordRight() {
+    if (this.cursor < this.line.length) {
+      var trailing = this.line.slice(this.cursor);
+      var match = trailing.match(wordRight);
+      this.line = this.line.slice(0, this.cursor) + trailing.slice(match[0].length);
+      this.refreshLine();
+    }
+  },
+
+  _deleteLineLeft: function _deleteLineLeft() {
+    this.line = this.line.slice(this.cursor);
+    this.cursor = 0;
+    this.refreshLine();
+  },
+
+  _deleteLineRight: function _deleteLineRight() {
+    this.line = this.line.slice(0, this.cursor);
+    this.refreshLine();
+  },
+
   _wordLeft: function _wordLeft() {
     if (this.cursor && this.line.length) {
       var leading = this.line.slice(0, this.cursor);
-      var match = leading.match(/([^\w\s]+|\w+|)\s*$/);
+      var match = leading.match(wordLeft);
       if (match) {
         this.cursor -= match[0].length;
         this.toCursor();
@@ -336,7 +367,7 @@ UltraRLI.prototype = {
   _wordRight: function _wordRight() {
     if (this.cursor < this.line.length) {
       var trailing = this.line.slice(this.cursor);
-      var match = trailing.match(/^(\s+|\W+|\w+)\s*/);
+      var match = trailing.match(wordRight);
       if (match) {
         this.cursor += match[0].length;
         this.toCursor();
@@ -366,14 +397,14 @@ UltraRLI.prototype = {
 
   _ttyWrite: function _ttyWrite(s, key){
     key = this.translate(s, key);
-    this.emit('keybind', key);
+    this.emit('keybind', key, s);
     if (key.used || key.ctrl || key.meta) return;
 
     if (Buffer.isBuffer(s)) {
       s = s.toString('utf8');
     }
     if (s) {
-      var lines = s.split(/\r\n|\n|\r/);
+      var lines = s.split(CRLF);
       for (var i = 0, len = lines.length; i < len; i++) {
         i && this._line();
         this._insertString(lines[i]);
@@ -414,3 +445,8 @@ var mounts = {
     bg: 'bgcyan'
   }
 };
+
+
+var wordLeft = /([^\w\s]+|\w+|)\s*$/;
+var wordRight = /^(\s+|\W+|\w+)\s*/;
+var CRLF = /\r\n|\n|\r/;

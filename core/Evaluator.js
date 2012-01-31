@@ -42,6 +42,12 @@ Evaluator.prototype = {
     }
   },
 
+  add: function add(context){
+    this.contexts.append(context);
+    this.contexts.last();
+    return context;
+  },
+
   create: function create(isGlobal){
     var context = this.contexts.append(new Context(this.settings, isGlobal));
     this.contexts.last();

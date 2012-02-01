@@ -7,9 +7,9 @@ var Commander    = require('./Commander');
 var UltraRLI     = require('./UltraRLI');
 var Evaluator    = require('./Evaluator');
 var Highlighter  = require('./Highlighter');
+var Results      = require('./Results');
 
 var Dict         = require('../lib/Dict');
-var Results      = require('../lib/PageSet');
 
 var monkeypatch  = require('../lib/monkeypatch');
 var builtins     = require('../lib/builtins');
@@ -20,7 +20,7 @@ var text         = require('../settings/text');
 
 var width = process.stdout._type === 'tty' ? process.stdout.getWindowSize()[0] : 60;
 
-module.exports.UltraREPL = UltraREPL;
+module.exports = UltraREPL;
 
 
 function UltraREPL(options){
@@ -28,7 +28,6 @@ function UltraREPL(options){
   options = options || {};
   options.stream = options.stream || process;
 
-  monkeypatch.typedArrays(global);
   this.settings = {
     columns: width,
     colors: process.stdout._type === 'tty'
@@ -46,8 +45,6 @@ function UltraREPL(options){
     input: options.stream.stdin || options.stream,
     output: options.stream.stdout || options.stream,
   };
-
-  monkeypatch.fixEmitKey(stream.input);
 
   var complete = function(){};
   var rli = new UltraRLI(stream, complete);
@@ -94,14 +91,28 @@ function UltraREPL(options){
   this.commands = new Commander(rli);
 
   var handler = function(action, cmd, params){
-    var result = action.call(self, cmd, params);
-    typeof result !== 'undefined' && self.writer(result);
-  };
+    var context = self.context.current;
+    context.snapshot();
+    var outcome = action.call(self, cmd, params);
+    var globals = context.snapshot();
+    if (typeof outcome !== 'undefined' || globals && Object.keys(globals).length) {
+      if (outcome && outcome.isResult) {
+        result = outcome;
+      } else if (outcome && outcome.error) {
+        var result = new Results.Fail(context, null, outcome.error);
+      } else {
+        var result = new Results.Success(context, null, outcome, globals);
+      }
+      self.writer(result);
+      self.resetInput();
+      return result;
+    }
+  }
 
   this.commands.on('keybind', handler);
   this.commands.on('keyword', handler);
 
-  this.pages = new Results;
+  this.pages = new Results.Rendered;
   this.loadScreen();
   this.header();
   this.updatePrompt();
@@ -175,7 +186,7 @@ UltraREPL.prototype = {
   },
 
   clear: function clear(){
-    this.pages = new Results;
+    this.pages = new Results.Rendered;
     this.rli.writePage(this.pages[0]);
   },
 
@@ -226,7 +237,7 @@ UltraREPL.prototype = {
   },
 
   writer: function writer(output){
-    if (output instanceof Results) {
+    if (output instanceof Results.Rendered) {
       this.pages = output;
     } else {
       if (output && typeof output === 'object') {
@@ -236,7 +247,7 @@ UltraREPL.prototype = {
           output = this.context.inspector(output);
         }
       }
-      this.pages = new Results(output);
+      this.pages = new Results.Rendered(output);
     }
 
     this.rli.writePage(this.pages[0]);
@@ -270,7 +281,7 @@ UltraREPL.prototype = {
     var helpL = nameW + triggerW + 2;
     var helpR = screenW - nameW - triggerW - 8;
     var last = 0;
-    return new Results(help.filter(function(cmd){ return cmd.help }).reduce(function(lines, cmd){
+    return new Results.Rendered(help.filter(function(cmd){ return cmd.help }).reduce(function(lines, cmd){
       var out = {
         help: cmd.help.color((last ^= 1) ? 'bwhite' : 'bblack'),
         type: cmd.type,
@@ -316,3 +327,4 @@ function highlight(fn){
 
 
 function hidden(v){ return { value: v, configurable: true, writable: true, enumerable: false } };
+

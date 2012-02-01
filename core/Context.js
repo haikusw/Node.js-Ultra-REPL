@@ -1,6 +1,7 @@
 var vm = require('vm');
 
 var Script = require('./Script');
+var Results = require('./Results');
 
 var builtins = require('../lib/builtins');
 var style = require('../settings/styling');
@@ -71,7 +72,7 @@ Context.prototype = {
   },
 
   view: function view(){
-    return new Success(this, new Script('this'), this.global);
+    return new Results.Success(this, new Script('this'), this.global);
   },
 
   setGlobal: function setGlobal(){
@@ -94,9 +95,9 @@ Context.prototype = {
     var globals = this.snapshot();
 
     if (outcome && outcome.error) {
-      var result = new Fail(this, script, outcome.error);
+      var result = new Results.Fail(this, script, outcome.error);
     } else {
-      var result = new Success(this, script, outcome, globals);
+      var result = new Results.Success(this, script, outcome, globals);
     }
     if (callback) {
       var self = this;
@@ -120,48 +121,3 @@ Context.prototype = {
     return context;
   }
 };
-
-
-function Result(status, inspector, completion){
-  if (!(this instanceof Result)) return new Result(status, inspector, completion);
-  this.status = status;
-  this.inspector = inspector;
-  this.completion = completion;
-}
-
-Result.prototype = {
-  completion: null,
-  globals: null,
-  error: null,
-  status: null,
-  script: null,
-  inspector: null,
-  isResult: true,
-  get _completion(){
-    return this.inspector && this.inspector(this.completion);
-  },
-  get _globals(){
-    return this.inspector && this.inspector(this.globals);
-  }
-};
-
-function Success(context, script, completion, globals){
-  if (!(this instanceof Success)) return new Success(context, script, completion, globals);
-  globals = globals || {};
-  this.status = 'Success';
-  this.completion = completion;
-  this.globals = Object.keys(globals).length ? globals : null;
-  this.script = script;
-  this.inspector = context.inspector;
-}
-
-Success.prototype = Object.create(Result.prototype);
-
-function Fail(context, script, error){
-  if (!(this instanceof Fail)) return new Fail(context, script, error);
-  this.status = error.name;
-  this.error = error;
-  this.script = script;
-}
-
-Fail.prototype = Object.create(Result.prototype);

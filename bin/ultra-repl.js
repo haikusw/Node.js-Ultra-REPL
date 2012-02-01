@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var UltraREPL = require('../').UltraREPL;
+var UltraREPL = require('../');
 
 new UltraREPL
 

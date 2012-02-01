@@ -107,6 +107,7 @@ function UltraREPL(options){
       self.resetInput();
       return result;
     }
+    context.refresh();
   }
 
   this.commands.on('keybind', handler);

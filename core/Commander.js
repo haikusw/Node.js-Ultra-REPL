@@ -108,7 +108,7 @@ Commander.prototype = {
 
   keyword: function keyword(cmd){
     if (this.keywords.has(cmd)) {
-      this.emit('keyword', this.keywords[cmd], cmd, cmd);
+      this.emit('keyword', this.keywords[cmd], cmd, '');
       return true;
     } else {
       var m = cmd.match(/^([^\s]+)\s+(.*)$/);

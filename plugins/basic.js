@@ -17,9 +17,7 @@ module.exports = [
     help: 'Type the name of a built-in module to include it on the current context.',
     defaultTrigger: { type: 'keywords', trigger: builtins.libs },
     action: function(lib){
-      this.context.ctx[lib] = require(lib);
-      this.context.current.refresh();
-      return this;
+      return this.context.ctx[lib] = require(lib);
     }
   },
   { name: 'Require',

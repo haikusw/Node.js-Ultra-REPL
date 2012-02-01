@@ -190,7 +190,7 @@ var noop = function(){}
 var formatters = {
   Boolean     : String,
   Constructor : function(f){ return functionLabel(f, 'Constructor'); },
-  Date        : callbind(Date.prototype.toDateString),
+  Date        : function(d){ try { return Date.prototype.toISOString.call(d).slice(0, 10) } catch (e) { return d+'' } },
   Error       : function(e){ return '[' + errorToString(e) + ']'; },
   Function    : function(f){ return functionLabel(f, 'Function'); },
   Null        : String,

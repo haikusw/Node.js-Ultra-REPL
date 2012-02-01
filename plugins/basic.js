@@ -28,7 +28,7 @@ module.exports = [
     action: function(cmd, input){
       var parts = input.split(' ');
       var name = parts.pop();
-      var lib = require(name);
+      try { var lib = require(name) } catch (e) { return e }
       if (parts.length) {
         name = parts.pop();
       } else if (Object(lib) === lib) {

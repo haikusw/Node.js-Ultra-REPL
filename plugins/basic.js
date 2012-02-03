@@ -22,7 +22,7 @@ module.exports = [
   },
   { name: 'Require',
     help: 'Require for contexts without exposing require to the context.',
-    defaultTrigger: { type: 'command', trigger: '.req' },
+    defaultTrigger: { type: 'command', trigger: '.r' },
     action: function(cmd, input){
       var parts = input.split(' ');
       var name = parts.pop();

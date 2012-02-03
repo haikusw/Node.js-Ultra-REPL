@@ -48,8 +48,7 @@ function Commander(rli){
     keywords: function(kws, action){
       kws.forEach(function(kw){ keywords[kw] = action });
     },
-    keyword: function(kw, action){ keywords[kw] = action },
-    command: function(cmd, action){ keywords[cmd] = action }
+    command: function(cmd, action){ keywords[cmd] = action  },
   };
 
   rli.on('keybind', function(key){
@@ -77,7 +76,7 @@ Commander.prototype = {
   loadControls: function loadControls(file){
     var controls = require(file);
     return controls(
-      function(x){ return { type: 'keyword', trigger: x } },
+      function(x){ return { type: 'keywords', trigger: x } },
       function(x){ return { type: 'command', trigger: x } },
       function(x){ return { type: 'keybind', trigger: x } }
     );

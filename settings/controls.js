@@ -1,4 +1,4 @@
-module.exports = function(keyword, command, keybind){
+module.exports = function(keywords, command, keybind){
   return {
     'Command List'                  : keybind('f1'),
     'Next Page'                     : keybind('pgdn'),
@@ -8,7 +8,7 @@ module.exports = function(keyword, command, keybind){
     'Exit'                          : keybind('esc esc esc'),
     'Inspect Context'               : keybind('ctrl+z'),
 
-    'Require'                       : command('.req'),
+    'Require'                       : command('.r'),
     'Load Plugin'                   : command('.plugin'),
 
     'Delete Right'                  : keybind('del'),

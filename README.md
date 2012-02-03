@@ -53,21 +53,33 @@ Everything else is unique per context: native objects and any code you run yours
 You can make and use as many contexts as you want.
 
 
-## Syntax Highlighting
-
-Evaluation results which are functions with readable source will be returned as syntax hightlighted code, utilizing aspects of CodeMirror2 along with modifications to work in the console.
-
-![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
-
-![Syntax Hightlighting](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss8.png)
-
 ## Misc
 
 New Global detection.
 
 ![New Globals](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss7.png)
 
+## Useful Error Display
+
+![Error Display](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss10.png)
+
+
+## Syntax Highlighting
+
+Evaluation results which are functions with readable source will be returned as syntax hightlighted code, utilizing aspects of CodeMirror2 along with modifications to work in the console.
+
+![Syntax Hightlighting 1](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss9.png)
+
+
+
+![Syntax Hightlighting 2](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss8.png)
+
+![Syntax Hightlighting 3](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss6.png)
+
+
 ## In Progress
+
+Once the file system interface is more fleshed out I'll be able to accomplish the following pretty quickly:
 
 * GUI-like interface with collapsable object views
 * State/setting indicators

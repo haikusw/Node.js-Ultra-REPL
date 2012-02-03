@@ -47,7 +47,7 @@ module.exports = [
       return this.context.view();
     }
   },
-  { name: 'Clear Input/Screen',
+  { name: 'Clear Input',
     help: 'Clear the the input line if it has text or clears the screen if not.',
     defaultTrigger: { type: 'keybind', trigger: 'esc' },
     action: function(){

@@ -20,7 +20,7 @@ module.exports = [
       return this.context.ctx.repl = this;
     }
   },
-  { name: 'Toggle Key Display',
+  { name: 'Key Display',
     help: 'Toggle displaying what keys are pressed.',
     defaultTrigger: { type: 'keybind', trigger: 'f11' },
     action: toggle('keydisplay')

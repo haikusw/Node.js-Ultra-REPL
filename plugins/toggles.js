@@ -16,32 +16,32 @@ function toggle(obj, prop){
 
 
 module.exports = [
-  { name: 'Toggle Hiddens',
+  { name: 'Hiddens',
     help: 'Toggle whether hidden properties are shown.',
     defaultTrigger: { type: 'keybind', trigger: 'f2' },
     action: toggle('currentSettings', 'hiddens')
   },
-  { name: 'Toggle Builtins',
+  { name: 'Builtins',
     help: 'Toggle whether default built-in objects are shown.',
     defaultTrigger: { type: 'keybind', trigger: 'f3' },
     action: toggle('currentSettings', 'builtins')
   },
-  { name: 'Toggle __proto__',
+  { name: '__proto__',
     help: 'Toggle whether [[prototype]] trees are displayed.',
     defaultTrigger: { type: 'keybind', trigger: 'f4' },
     action: toggle('currentSettings', 'protos')
   },
-  { name: 'Toggle Multi-item Lines',
+  { name: 'Dense Format',
     help: 'Toggle showing multiple properties/array items per line.',
     defaultTrigger: { type: 'keybind', trigger: 'f5' },
     action: toggle('currentSettings', 'multiItemLines')
   },
-  { name: 'Toggle Colors',
+  { name: 'Colors',
     help: 'Toggle whether output is colored.',
     defaultTrigger: { type: 'keybind', trigger: 'f9' },
     action: toggle('settings', 'colors')
   },
-  { name: 'Inspect Depth--',
+  { name: 'Depth--',
     help: 'Decrease inspector recurse depth',
     defaultTrigger: { type: 'keybind', trigger: 'alt+1' },
     action: function(){
@@ -53,7 +53,7 @@ module.exports = [
       }
     }
   },
-  { name: 'Inspect Depth++',
+  { name: 'Depth++',
     help: 'Increase inspector recurse depth',
     defaultTrigger: { type: 'keybind', trigger: 'alt+2' },
     action: function(){
@@ -63,7 +63,7 @@ module.exports = [
       this.timedPrompt('depth ' + settings.depth, style.prompt['++']);
     }
   },
-  { name: 'Set Inspect Depth',
+  { name: 'Set Depth',
     help: 'Set inspector recurse depth\n',
     defaultTrigger: { type: 'command', trigger: '.depth' },
     action: function(cmd, depth){

@@ -3,7 +3,7 @@ module.exports = function(keywords, command, keybind){
     'Command List'                  : keybind('f1'),
     'Next Page'                     : keybind('pgdn'),
     'Previous Page'                 : keybind('pgup'),
-    'Clear Input/Screen'            : keybind('esc'),
+    'Clear Input'                   : keybind('esc'),
     'Clear Screen'                  : keybind('esc esc'),
     'Exit'                          : keybind('esc esc esc'),
     'Inspect Context'               : keybind('ctrl+z'),
@@ -32,17 +32,17 @@ module.exports = function(keywords, command, keybind){
     //'Tab Complete'                  : keybind('tab'),
 
     // Toggles
-    'Toggle Hiddens'                : keybind('f2'),
-    'Toggle Builtins'               : keybind('f3'),
-    'Toggle __proto__'              : keybind('f4'),
-    'Toggle Multi-item Lines'       : keybind('f5'),
-    'Inspect Depth--'               : keybind('alt+1'),
-    'Inspect Depth++'               : keybind('alt+2'),
-    'Toggle Colors'                 : keybind('f9'),
-    'Set Inspect Depth'             : command('.depth'),
-
-    // Context Controls
-    'Inject Node Builtins'          : keybind('alt+a'),
+    'Hiddens'                       : keybind('f2'),
+    'Builtins'                      : keybind('f3'),
+    '__proto__'                     : keybind('f4'),
+    'Multi-item Lines'              : keybind('f5'),
+    'Depth--'                       : keybind('alt+1'),
+    'Depth++'                       : keybind('alt+2'),
+    'Colors'                        : keybind('f9'),
+    'Set Depth'                     : command('.depth'),
+       
+    // Context Controls       
+    'Node Builtins'                 : keybind('alt+a'),
     'Create Context'                : keybind('ctrl+shift+up'),
     'Delete Context'                : keybind('ctrl+shift+down'),
     'Reset Context'                 : command('.reset'),
@@ -52,7 +52,7 @@ module.exports = function(keywords, command, keybind){
 
     // REPL Development
     'Color Test'                    : keybind('f10'),
-    'Toggle Key Display'            : keybind('f11'),
+    'Key Display'                   : keybind('f11'),
     'Inject REPL'                   : keybind('f12'),
   };
 }

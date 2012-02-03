@@ -29,7 +29,7 @@ function contextCommand(action){
 }
 
 module.exports = [
-  { name: 'Inject Node Builtins',
+  { name: 'Node Builtins',
     help: 'Add the default Node global variables to the current context. This includes process, console, '+
           'Buffer, and the various ArrayBuffer functions.',
     defaultTrigger: { type: 'keybind', trigger: 'alt+a' },
@@ -67,7 +67,17 @@ module.exports = [
       this.context.name = name;
       this.updatePrompt();
     }
-  }
+  },
+  // { name: 'Experimental Context',
+  //   help: 'Loads a new context including a custom version of the NativeModule as well as all new core modules.',
+  //   defaultTrigger: { type: 'keybind', trigger: 'alt+3' },
+  //   action: function(cmd, name){
+  //     var NodeContext = require('../core/NodeContext');
+  //     var context = new NodeContext(this.settings);
+  //     this.context.add(context);
+  //     context.initProcess();
+  //     context.initEmptyMain();
+  //     return context;
+  //   }
+  // }
 ]
-
-

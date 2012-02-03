@@ -8,6 +8,7 @@ module.exports = function(keywords, command, keybind){
     'Exit'                          : keybind('esc esc esc'),
     'Inspect Context'               : keybind('ctrl+z'),
 
+    'Stack Trace'                   : keybind('alt+s'),
     'Require'                       : command('.r'),
     'Load Plugin'                   : command('.plugin'),
 

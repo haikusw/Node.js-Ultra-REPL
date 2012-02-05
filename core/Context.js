@@ -89,7 +89,7 @@ Context.prototype = {
   },
 
   view: function view(){
-    return new Results.Success(this, new Script('this'), this.global);
+    return new Results.Success(this, new Script('this'), this.global, null, 'Global Object');
   },
 
   setGlobal: function setGlobal(){

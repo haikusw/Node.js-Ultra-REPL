@@ -1,4 +1,5 @@
 var builtins = require('../lib/builtins');
+var Results = require('../core/Results');
 
 module.exports = [
   { name: 'Command List',
@@ -18,7 +19,24 @@ module.exports = [
     defaultTrigger: { type: 'keywords', trigger: builtins.libs.map(function(lib){ return '/'+lib }) },
     action: function(lib){
       lib = lib.slice(1);
-      return this.context.ctx[lib] = require(lib);
+      var result = this.context.ctx[lib] = require(lib);
+      return new Results.Success(this.context.current, null, result, null, 'Built-in Lib "'+lib+'"');
+    }
+  },
+  { name: 'Set/View Local',
+    help: 'View the current or set a new object which is local scoped for executed code.',
+    defaultTrigger: { type: 'command', trigger: '.local' },
+    action: function(cmd, scope){
+      if (scope.trim()) {
+        var result = this.context.run(scope.replace(/^\s*=/,''));
+        if (result.status === 'Success') {
+          this.context.current.local = result.completion;
+          result.label = 'Locals';
+          return result;
+        } 
+      } else {
+        return new Results.Success(this.context.current, null, this.context.local, null, 'Locals');
+      }
     }
   },
   { name: 'Require',
@@ -27,7 +45,7 @@ module.exports = [
     action: function(cmd, input){
       var parts = input.split(' ');
       var name = parts.pop();
-      try { var lib = require(name) } catch (e) { return e }
+      try {var lib = require(name) } catch (e) { return e }
       if (parts.length) {
         name = parts.pop();
       } else if (Object(lib) === lib) {
@@ -38,7 +56,7 @@ module.exports = [
           lib = lib[name];
         }
       }
-      return this.context.ctx[name] = lib;
+      return new Results.Success(this.context.current, null, this.context.ctx[name] = lib, null, 'Required lib "'+name+'"');
     }
   },
   { name: 'Inspect Context',

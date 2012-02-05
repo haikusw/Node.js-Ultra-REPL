@@ -1,6 +1,5 @@
 var builtins = require('../lib/builtins');
 var isError = require('../lib/object-utils').is('Error');
-var Results = require('../core/Results');
 var style = require('../settings/styling');
 
 
@@ -63,22 +62,6 @@ module.exports = [
     action: function(cmd, name){
       this.context.name = name;
       this.updatePrompt();
-    }
-  },
-  { name: 'Set/View Local',
-    help: 'View the current or set a new object which is local scoped for executed code.',
-    defaultTrigger: { type: 'command', trigger: '.local' },
-    action: function(cmd, scope){
-      if (scope.trim()) {
-        var result = this.context.run(scope.replace(/^\s*=/,''));
-        if (result.status === 'Success') {
-          this.context.current.local = result.completion;
-          result.label = 'Locals';
-          return result;
-        } 
-      } else {
-        return new Results.Success(this.context.current, null, this.context.local, null, 'Locals');
-      }
     }
   }
 ];

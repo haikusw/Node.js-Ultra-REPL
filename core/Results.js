@@ -95,7 +95,7 @@ function Success(context, script, completion, globals, label){
   globals = globals || {};
   this.status = 'Success';
   this.completion = completion;
-  this.globals = Object.keys(globals).length ? globals : null;
+  this.globals = Object(globals) === globals && Object.keys(globals).length ? globals : null;
   this.script = script;
   this.inspector = context.inspector;
   this.label = label;

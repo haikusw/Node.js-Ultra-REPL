@@ -32,7 +32,11 @@ function UltraREPL(options){
 
   this.settings = {
     columns: output._type === 'tty' ? output.getWindowSize()[0] : 60,
-    colors: output._type === 'tty'
+    colors: output._type === 'tty',
+    stdout: process.stdout,
+    stederr: process.stderr,
+    assert: require('assert'),
+    format: require('util').format
   };
   String.prototype.color.context = this.settings;
   var context = this.context = new Evaluator(this.settings);

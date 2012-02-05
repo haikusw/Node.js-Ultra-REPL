@@ -482,6 +482,49 @@ function isNative(o){
 
 
 
+var console;
+
+function makeConsole(settings){
+  var times = {};
+  console = {
+    log: function(){
+      settings.stdout.write(settings.format.apply(this, arguments) + '\n');
+    },
+    warn: function(){
+      settings.stderr.write(settings.format.apply(this, arguments) + '\n');
+    },
+    dir: function(object){
+      settings.stdout.write(inspect(object) + '\n');
+    },
+    time: function(label){
+      times[label] = Date.now();
+    },
+    timeEnd: function(label){
+      var duration = Date.now() - times[label];
+      console.log('%s: %dms', label, duration);
+    },
+    trace: function(label){
+      var err = new Error;
+      err.name = 'Trace';
+      err.message = label || '';
+      Error.captureStackTrace(err, arguments.callee);
+      console.error(err.stack);
+    },
+    assert: function(expression){
+      if (!expression) {
+        var arr = Array.prototype.slice.call(arguments, 1);
+        settings.assert.ok(false, settings.format.apply(this, arr));
+      }
+    }
+  };
+
+  console.info = console.log;
+  console.error = console.warn;
+  return console;
+}
+
+
+
 
 
 function widest(arr, field){
@@ -492,6 +535,10 @@ function widest(arr, field){
     return a > b ? a : b;
   }, 0);
 }
+
+
+
+
 
 function desc(val){ return { enumerable: false, configurable: true, writable: true, value: val } }
 
@@ -520,6 +567,7 @@ Object.defineProperties(String.prototype, {
   }),
   chunk: desc(chunk)
 })
+
 
 function chunk(split, bounds, indent, source){
   if (Array.isArray(source)) {
@@ -559,12 +607,6 @@ function chunk(split, bounds, indent, source){
   }
   return result;
 }
-
-
-
-
-
-
 
 
 function clone(obj){
@@ -631,6 +673,7 @@ if ('Proxy' in global) {
 return function(options, globalSettings, builtinList, styleList){
   builtins = builtinList;
   styles = styleList;
+  makeConsole(globalSettings);
   var snapshots = {};
   return {
     snapshot: function snapshot(name){
@@ -652,7 +695,8 @@ return function(options, globalSettings, builtinList, styleList){
     },
     define: function define(name, desc){
       Object.defineProperty(global, name, desc);
-    }
+    },
+    console: console
   }
 };
 

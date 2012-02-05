@@ -82,7 +82,8 @@ Context.prototype = {
       module: module,
       exports: exports,
       __dirname: process.cwd(),
-      __filename: module.filename
+      __filename: module.filename,
+      console: this.console
     };
     return this;
   },

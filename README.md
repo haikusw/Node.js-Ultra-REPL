@@ -53,6 +53,17 @@ Everything else is unique per context: native objects and any code you run yours
 You can make and use as many contexts as you want.
 
 
+## Local Scope
+
+Each context has a local scope object that contains variables not found on its global object or anywhere in the context, but are accessible from code run in the REPL. This works similarly to Node's module, `exports`, `require`, `__dirname`, and `__filename`. The difference is that you can change what's on the local context using the `.local` command.
+
+
+![Default Local Scope](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss11.png)
+
+
+![Set Local Scope to require("fs") just because](https://raw.github.com/Benvie/Node.js-Ultra-REPL/master/docs/ss12.png)
+
+
 ## Misc
 
 New Global detection.

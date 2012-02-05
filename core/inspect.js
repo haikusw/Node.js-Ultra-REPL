@@ -281,13 +281,13 @@ function formatValue(value, key, depth, settings) {
         output.push('');
       } else {
         item = formatProperty(value, i, depth, settings, array);
+        output.push(item);
         if (primitive) {
           primitive = primitive && isPrimitive(value[i]);
           length = item.alength;
           maxlength = Math.max(length, maxlength);
           total += length;
         }
-        output.push(item);
       }
     }
     if (primitive) {
@@ -575,10 +575,6 @@ function clone(obj){
 }
 
 
-
-
-
-
 function compare(before, after){
   var beforeProps = Object.getOwnPropertyNames(before);
 
@@ -653,6 +649,9 @@ return function(options, globalSettings, builtinList, styleList){
     },
     inspector: function inspector(obj){
       return typeof obj === 'string' ? obj : inspect(obj, options, globalSettings);
+    },
+    define: function define(name, desc){
+      Object.defineProperty(global, name, desc);
     }
   }
 };

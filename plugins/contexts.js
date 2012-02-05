@@ -3,15 +3,6 @@ var isError = require('../lib/object-utils').is('Error');
 var style = require('../settings/styling');
 
 
-
-function nodeBuiltins(){
-  this.context.current.setGlobal();
-  builtins.node.forEach(function(name){
-    Object.defineProperty(this.context.ctx, name, Object.getOwnPropertyDescriptor(global, name));
-  }, this);
-  this.refresh();
-}
-
 function contextCommand(action){
   return function(){
     var result = this.context[action]();
@@ -33,7 +24,12 @@ module.exports = [
     help: 'Add the default Node global variables to the current context. This includes process, console, '+
           'Buffer, and the various ArrayBuffer functions.',
     defaultTrigger: { type: 'keybind', trigger: 'alt+a' },
-    action: nodeBuiltins
+    action: function(){
+      this.context.current.setGlobal();
+      if (this.context.current.installPresets('node')) {
+        this.updatePrompt();
+      }
+    }
   },
   { name: 'Create Context',
     help: 'Create, initialize, and switch into a new V8 context.',
@@ -68,6 +64,7 @@ module.exports = [
       this.updatePrompt();
     }
   },
+]
   // { name: 'Experimental Context',
   //   help: 'Loads a new context including a custom version of the NativeModule as well as all new core modules.',
   //   defaultTrigger: { type: 'keybind', trigger: 'alt+3' },
@@ -80,4 +77,3 @@ module.exports = [
   //     return context;
   //   }
   // }
-]

@@ -27,7 +27,6 @@ function Context(globalSettings, isGlobal){
   } else {
     this.name = names.shift();
   }
-
   Object.defineProperties(this, {
     id: { value: contexts.length },
     displayName: { value: this.name.color(namecolors[contexts.length % namecolors.length]) }
@@ -40,6 +39,10 @@ function Context(globalSettings, isGlobal){
   this.initialize(globalSettings);
 }
 
+Context.presets = {
+  node: function(){ return { source: global, properties: builtins.node } }
+};
+
 Context.prototype = {
   constructor: Context,
 
@@ -49,6 +52,7 @@ Context.prototype = {
   get lastResult(){ return this.history.length && this.history[this.history.length-1] },
 
   initialize: function initialize(globalSettings){
+    this.presets = {};
     this.ctx = vm.createContext();
     Object.defineProperty(this, 'global', { value: vm.runInContext('this', this.ctx), writable: true });
 
@@ -56,17 +60,11 @@ Context.prototype = {
     this.inspector = init.inspector;
     this.getGlobals = init.globals;
     this.snapshot = init.snapshot;
+    this.define = init.define;
     this.history = [];
     if (this.isGlobal) {
       this.setGlobal();
-
-      Object.getOwnPropertyNames(global).forEach(function(prop){
-        if (prop !== 'global' && prop !== 'root' && prop !== 'GLOBAL' && !(prop in this.ctx)) {
-          Object.defineProperty(this.ctx, prop, Object.getOwnPropertyDescriptor(global, prop));
-        }
-      }, this);
-
-      this.refresh();
+      this.installPresets('node');
     }
     return this;
   },
@@ -77,6 +75,17 @@ Context.prototype = {
 
   setGlobal: function setGlobal(){
     vm.runInContext('global = this', this.ctx);
+  },
+
+  installPresets: function installPresets(name){
+    if (name in this.presets) return false;
+    var preset = Context.presets[name]();
+    var decls = preset.properties.map(function(prop){
+      this.define(prop, Object.getOwnPropertyDescriptor(preset.source, prop));
+    }, this);
+    this.refresh();
+    this.presets[name] = true;
+    return true;
   },
 
   refresh: function refresh(){

@@ -64,7 +64,22 @@ module.exports = [
       this.updatePrompt();
     }
   },
-]
+  { name: 'Set/View Local',
+    help: 'View the current or set a new object which is local scoped for executed code.',
+    defaultTrigger: { type: 'command', trigger: '.local' },
+    action: function(cmd, scope){
+      if (scope.trim()) {
+        var result = this.context.run(scope);
+        if (result.status === 'Success') {
+          this.context.current.local = result.completion;
+          return result;
+        } 
+      } else {
+        return this.context.current.local;
+      }
+    }
+  }
+];
   // { name: 'Experimental Context',
   //   help: 'Loads a new context including a custom version of the NativeModule as well as all new core modules.',
   //   defaultTrigger: { type: 'keybind', trigger: 'alt+3' },

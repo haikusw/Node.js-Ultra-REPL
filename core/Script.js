@@ -49,18 +49,43 @@ Script.wrap = function wrap(script, name){
 
 Script.cache = {};
 Script.fileCache = {};
+Script.scopeWrap = function scopeWrap(names, src){
+  return '(function(global){'+
+           'return function('+names+'){'+
+             'return('+src+'\n)'+
+           '}.bind(global)'+
+         '})(this)';
+}
 
-
+function tryrun(script, context){
+  if (typeof script === 'string') script = Script.compile(script);
+  if (script instanceof SyntaxError) {
+    return { error: script };
+  }
+  var method = context ? 'runInContext' : 'runInNewContext';
+  try { return script[method](context) }
+  catch (e) { return { error: e } }
+}
 
 Script.prototype = {
   constructor: Script,
   run: function run(context){
-    if (this.wrap instanceof SyntaxError) {
-      return { error: this.wrap };
+    return tryrun(this.wrap, context);
+  },
+  scoped: function scoped(context, scope){
+    var names = Array.isArray(scope) ? scope : Object.getOwnPropertyNames(scope);
+    names = names.filter(function(name){
+      return !/$[a-zA-Z_$][\w_$]*$/.test(name);
+    });
+
+    var unbound = tryrun(Script.scopeWrap(names, this.code), context);
+    if (!unbound || unbound.error) return unbound;
+
+    function bind(scope){
+      try { return unbound.apply(scope, names.map(function(s){ return scope[s] })); }
+      catch (e) { return { error: e } }
     }
-    var method = context ? 'runInContext' : 'runInNewContext';
-    try { return this.wrap[method](context) }
-    catch (e) { return { error: e } }
+    return Array.isArray(scope) ? bind : bind(scope);
   },
   inspect: function inspect(formatter){
     var code = this.code.slice(0, 40);
@@ -98,3 +123,6 @@ function sha(code){
   shasum.update(code);
   return shasum.digest('hex');
 }
+
+
+

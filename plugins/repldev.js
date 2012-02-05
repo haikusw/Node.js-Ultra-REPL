@@ -14,10 +14,10 @@ function toggle(obj, prop){
 
 module.exports = [
   { name: 'Inject REPL',
-    help: 'Adds a reference to the live repl object to the current context.',
+    help: 'Adds a reference to the live repl object to the current context local scope.',
     defaultTrigger: { type: 'keybind', trigger: 'f12' },
     action: function(){
-      return this.context.ctx.repl = this;
+      return this.context.local.repl = this;
     }
   },
   { name: 'Key Display',

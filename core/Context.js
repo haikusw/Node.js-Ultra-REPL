@@ -1,3 +1,4 @@
+var path = require('path');
 var vm = require('vm');
 
 var Script = require('./Script');
@@ -57,15 +58,32 @@ Context.prototype = {
     Object.defineProperty(this, 'global', { value: vm.runInContext('this', this.ctx), writable: true });
 
     var init = inspector.run(this.ctx)(this.settings, globalSettings, builtins, style.inspector);
-    this.inspector = init.inspector;
-    this.getGlobals = init.globals;
-    this.snapshot = init.snapshot;
-    this.define = init.define;
+    for (var k in init) this[k] = init[k];
     this.history = [];
     if (this.isGlobal) {
       this.setGlobal();
       this.installPresets('node');
     }
+    var exports = new this.ctx.Object;
+    var module = new this.ctx.Object({
+      __proto__: Module.prototype,
+      filename: path.resolve(process.cwd(), this.name),
+      paths: process.mainModule.paths.slice(),
+      children: new this.ctx.Array,
+      id: '.',
+      parent: null,
+      get exports(){ return exports },
+      set exports(v){ exports = v },
+      exited: false,
+      loaded: true,
+    });
+    this.local = {
+      require: module.require,
+      module: module,
+      exports: exports,
+      __dirname: process.cwd(),
+      __filename: module.filename
+    };
     return this;
   },
 
@@ -92,15 +110,21 @@ Context.prototype = {
     vm.runInContext('this', this.ctx);
   },
 
-  run: function run(script, callback){
+  run: function run(script, noRecord, callback){
+    if (typeof noRecord === 'function') {
+      callback = noRecord, noRecord = false;
+    }
+    noRecord = noRecord === true;
+
     if (typeof script === 'string') {
       script = new Script(script);
     }
     if (script instanceof vm.Script) {
       script = Script.wrap(script);
     }
+
     this.snapshot();
-    var outcome = script.run(this.ctx);
+    var outcome = script.scoped(this.ctx, this.local);
     var globals = this.snapshot();
 
     if (outcome && outcome.error) {
@@ -111,10 +135,11 @@ Context.prototype = {
     if (callback) {
       var self = this;
       process.nextTick(function(){
-        self.history.push(result);
+        if (!noRecord) self.history.push(result);
         callback(result)
       });
     } else {
+      if (!noRecord) this.history.push(result);
       return result;
     }
   },
@@ -128,5 +153,16 @@ Context.prototype = {
       context.run(event.script);
     });
     return context;
+  }
+};
+
+
+
+function Module(){}
+
+Module.prototype = {
+  constructor: Module,
+  require: function require(path){
+    return process.mainModule.require(path);
   }
 };

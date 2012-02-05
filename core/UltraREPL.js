@@ -1,5 +1,3 @@
-"use strict";
-
 var str = require('../lib/string-utils');
 str.attachTo(String.prototype);
 
@@ -20,17 +18,21 @@ var text         = require('../settings/text');
 
 var width = process.stdout._type === 'tty' ? process.stdout.getWindowSize()[0] : 60;
 
+
+
 module.exports = UltraREPL;
 
 
 function UltraREPL(options){
   var self = this;
   options = options || {};
-  options.stream = options.stream || process;
+
+  var input = options.input || process.stdin;
+  var output = options.output || process.stdout;
 
   this.settings = {
-    columns: width,
-    colors: process.stdout._type === 'tty'
+    columns: output._type === 'tty' ? output.getWindowSize()[0] : 60,
+    colors: output._type === 'tty'
   };
   String.prototype.color.context = this.settings;
   var context = this.context = new Evaluator(this.settings);
@@ -41,19 +43,15 @@ function UltraREPL(options){
   this.lines.level = [];
   this.keydisplay = false;
 
-  var stream = {
-    input: options.stream.stdin || options.stream,
-    output: options.stream.stdout || options.stream,
-  };
 
   var complete = function(){};
-  var rli = new UltraRLI(stream, complete);
+  var rli = this.rli = new UltraRLI(input, output, complete);
   var pages;
 
+
   Object.defineProperties(this, {
-    input: hidden(stream.input),
-    output: hidden(stream.output),
-    rli: hidden(rli),
+    input: hidden(input),
+    output: hidden(output),
     pages: {
       configurable: true,
       get: function( ){ return pages },
@@ -61,7 +59,7 @@ function UltraREPL(options){
     }
   });
 
-  rli.on('close', function(){ stream.input.destroy() });
+  rli.on('close', function(){ input.destroy() });
   rli.on('resize', function(){ self.refresh() });
   rli.on('keybind', function(key){
     self.keydisplay && rli.timedWrite('topright', key.bind, style.info.keydisplay);
@@ -330,4 +328,3 @@ function highlight(fn){
 
 
 function hidden(v){ return { value: v, configurable: true, writable: true, enumerable: false } };
-

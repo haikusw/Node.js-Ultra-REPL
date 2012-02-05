@@ -1,5 +1,6 @@
 var builtins = require('../lib/builtins');
 var isError = require('../lib/object-utils').is('Error');
+var Results = require('../core/Results');
 var style = require('../settings/styling');
 
 
@@ -69,13 +70,14 @@ module.exports = [
     defaultTrigger: { type: 'command', trigger: '.local' },
     action: function(cmd, scope){
       if (scope.trim()) {
-        var result = this.context.run(scope);
+        var result = this.context.run(scope.replace(/^\s*=/,''));
         if (result.status === 'Success') {
           this.context.current.local = result.completion;
+          result.label = 'Locals';
           return result;
         } 
       } else {
-        return this.context.current.local;
+        return new Results.Success(this.context.current, null, this.context.local, null, 'Locals');
       }
     }
   }

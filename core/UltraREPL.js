@@ -212,6 +212,9 @@ UltraREPL.prototype = {
     }
 
     if (result.completion) {
+      if (result.label) {
+        output.push(header(result.label, style.inspector.header));
+      }
       if (result.globals) output.push(header('Result', style.inspector.header));
       output.push(result._completion);
       if (typeof result.completion === 'function') {
@@ -224,7 +227,6 @@ UltraREPL.prototype = {
     }
 
     if (!output.length) {
-      //output.push(header('Result', style.inspector.header));
       output.push(result._completion);
     }
 

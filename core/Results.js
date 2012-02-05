@@ -64,11 +64,12 @@ Page.prototype = {
 
 
 
-function Result(status, inspector, completion){
+function Result(status, inspector, completion, label){
   if (!(this instanceof Result)) return new Result(status, inspector, completion);
   this.status = status;
   this.inspector = inspector;
   this.completion = completion;
+  this.label = label;
 }
 
 Result.prototype = {
@@ -78,6 +79,7 @@ Result.prototype = {
   status: null,
   script: null,
   inspector: null,
+  label: null,
   isResult: true,
   get _completion(){
     return this.inspector && this.inspector(this.completion);
@@ -88,7 +90,7 @@ Result.prototype = {
 };
 
 
-function Success(context, script, completion, globals){
+function Success(context, script, completion, globals, label){
   if (!(this instanceof Success)) return new Success(context, script, completion, globals);
   globals = globals || {};
   this.status = 'Success';
@@ -96,6 +98,7 @@ function Success(context, script, completion, globals){
   this.globals = Object.keys(globals).length ? globals : null;
   this.script = script;
   this.inspector = context.inspector;
+  this.label = label;
 }
 
 Success.prototype = Object.create(Result.prototype);

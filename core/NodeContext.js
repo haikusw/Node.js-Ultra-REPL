@@ -1,8 +1,9 @@
 var vm = require('vm');
+var path = require('path');
 
-var Script = require('./Script');
+var Script = require(path._makeLong('Script.js'));
 var Context = require('./Context');
-var NativeModule = new Script('./NativeModule.js');
+var NativeModule = new Script(path._makeLong('./NativeModule.js'));
 
 require('./UltraREPL')
 

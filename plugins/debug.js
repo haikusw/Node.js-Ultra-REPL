@@ -83,9 +83,9 @@ function trace(_, i){
 
 
   return [
-    [ pad(n,5), pad(loc.name+' '+loc.type, 60)          , loc.line     ],
-    [ space(5), pad(scope.scope, 60)                               , loc.column   ],
-    [ space(5), pad(origin.type + origin.method + origin.function, 60), loc.position ],
+    [ pad(n,5), pad(loc.name+' '+loc.type, 40)          , loc.line     ],
+    [ space(5), pad(scope.scope, 40)                               , loc.column   ],
+    [ space(5), pad(origin.type + origin.method + origin.function, 40), loc.position ],
     [ origin.all ],
     [  ]
   ].map(function(s){return s.join('')}).join('\n') 

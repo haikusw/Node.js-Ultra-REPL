@@ -14,9 +14,10 @@ module.exports = [
     }
   },
   { name: 'Auto-Includer',
-    help: 'Type the name of a built-in module to include it on the current context.',
-    defaultTrigger: { type: 'keywords', trigger: builtins.libs },
+    help: 'Type "/<lib>" to include built-in <lib> on the current context.',
+    defaultTrigger: { type: 'keywords', trigger: builtins.libs.map(function(lib){ return '/'+lib }) },
     action: function(lib){
+      lib = lib.slice(1);
       return this.context.ctx[lib] = require(lib);
     }
   },

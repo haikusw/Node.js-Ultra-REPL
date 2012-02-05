@@ -2,15 +2,14 @@ var EventEmitter = require('events').EventEmitter;
 var tty = require('tty');
 
 
-
 module.exports = UltraRLI;
 
-function UltraRLI(stream, completer){
-  var self = this;
+function UltraRLI(input, output, completer){
   EventEmitter.call(this);
+  var self = this;
 
-  var output = this.output = stream.output;
-  var input = this.input = stream.input;
+  this.output = output;
+  this.input = input;
   input.resume();
 
   completer = completer || function(){ return [] };
@@ -21,31 +20,31 @@ function UltraRLI(stream, completer){
   this.line = '';
   this.enabled = output.isTTY && !parseInt(process.env['NODE_NO_READLINE'], 10);
 
+  this.cursor = 0;
+  this.history = [];
+  this.historyIndex = -1;
+  this._promptLength = 0;
+  this._prompt = '';
+  this.resize.last = [];
   if (!this.enabled) {
     input.on('data', function(data){ self._normalWrite(data) });
   } else {
     input.on('keypress', function(s, key){ self._ttyWrite(s, key) });
     tty.setRawMode(true);
-    this.cursor = 0;
-    this.history = [];
-    this.historyIndex = -1;
-    this._promptLength = 0;
-    this._prompt = '';
-    this.resize.last = [];
     this.resize();
-
     if (process.listeners('SIGWINCH').length === 0) {
       process.on('SIGWINCH', this.resize.bind(this));
     }
   }
 }
 
+
 UltraRLI.prototype = {
   __proto__: EventEmitter.prototype,
   constructor: UltraRLI,
 
   resize: function resize(size){
-    size = size || this.output.getWindowSize();
+    try { size = size || this.output.getWindowSize(); } catch (e) {}
     if (size[0] === resize.last[0] && size[1] === resize.last[1]) return;
     resize.last = size;
     this.width = size[0];
@@ -122,15 +121,15 @@ UltraRLI.prototype = {
   },
 
   fill: function fill(minus){
-    this.output.cursorTo(0, 0);
+    this.cursorTo(0, 0);
     this.output.write('\n'.repeat(this.height - minus));
     this.toCursor();
   },
 
   eraseInput: function eraseInput(){
-    this.output.cursorTo(0, this.height);
+    this.cursorTo(0, this.height);
     this.output.clearLine();
-    this.output.moveCursor(-this.width);
+    this.moveCursor(-this.width);
   },
 
   clearLine: function clearLine(){
@@ -152,12 +151,12 @@ UltraRLI.prototype = {
   },
 
   toCursor: function toCursor(){
-    this.output.cursorTo(this._promptLength + this.cursor, this.height);
+    this.cursorTo(this._promptLength + this.cursor, this.height);
   },
 
   home: function home(){
     this.cursor = 0;
-    this.output.cursorTo(this._promptLength, this.height);
+    this.cursorTo(this._promptLength, this.height);
   },
 
   setPrompt: function setPrompt(prompt){
@@ -171,7 +170,7 @@ UltraRLI.prototype = {
     from = from > 1 ? from : 1;
     to = to < this.height ? to : this.height;
     for (; from < to; from++) {
-      this.output.cursorTo(0, from);
+      this.cursorTo(0, from);
       this.output.clearLine();
     }
     this.toCursor();
@@ -181,18 +180,18 @@ UltraRLI.prototype = {
     output = typeof output === 'string' ? output.split(CRLF) : output;
     top = top > 0 ? top : 0;
     left = left || 0;
-    this.output.cursorTo(left, top + 1);
+    this.cursorTo(left, top + 1);
     for (var i = 0, len = output.length; i + top < this.height - 1 && i < output.length; i++) {
-      this.output.moveCursor(0, 1);
+      this.moveCursor(0, 1);
       this.output.write(output[i] );
-      this.output.cursorTo(left);
+      this.cursorTo(left);
     }
     this.toCursor();
   },
 
   writePage: function writePage(lines){
     for (var i = 0; i < this.height - 2 && i < lines.length; i++) {
-      this.output.cursorTo(0, i + 1);
+      this.cursorTo(0, i + 1);
       this.output.write(lines[i]);
       this.output.clearLine(1);
     };
@@ -209,6 +208,48 @@ UltraRLI.prototype = {
     if (x >= this.width) return this.width;
   },
 
+  cursorTo: function cursorTo(x, y) {
+    if (typeof x !== 'number' && typeof y !== 'number')
+      return;
+
+    if (typeof x !== 'number')
+      throw new Error("Can't set cursor row without also setting it's column");
+
+    if (typeof y !== 'number') {
+      this.output.write('\x1b[' + (x + 1) + 'G');
+    } else {
+      this.output.write('\x1b[' + (y + 1) + ';' + (x + 1) + 'H');
+    }
+  },
+
+
+  moveCursor: function moveCursor(dx, dy) {
+    if (dx < 0) {
+      this.output.write('\x1b[' + (-dx) + 'D');
+    } else if (dx > 0) {
+      this.output.write('\x1b[' + dx + 'C');
+    }
+
+    if (dy < 0) {
+      this.output.write('\x1b[' + (-dy) + 'A');
+    } else if (dy > 0) {
+      this.output.write('\x1b[' + dy + 'B');
+    }
+  },
+
+  ___clearLine: function clearLine(dir) {
+    if (dir < 0) {
+      // to the beginning
+      this.output.write('\x1b[1K');
+    } else if (dir > 0) {
+      // to the end
+      this.output.write('\x1b[0K');
+    } else {
+      // entire line
+      this.output.write('\x1b[2K');
+    }
+  },
+
   scaleY: function scaleY(y){
     if (y === 'center')   return this.height / 2 | 0;
     if (y === 'bottom')   return this.height - 1;
@@ -222,7 +263,7 @@ UltraRLI.prototype = {
   eraseMount: function eraseMount(mount){
     if (typeof mount === 'string') mount = mounts[mount];
     if (!mount.contents) return;
-    this.output.cursorTo(mount.left, mount.top);
+    this.cursorTo(mount.left, mount.top);
     this.output.write(' '.repeat(mount.width).color(mount.bg));
     mount.width = 0;
     mount.contents = '';
@@ -241,7 +282,7 @@ UltraRLI.prototype = {
     } else if (mount.align === 'center') {
       mount.left -= mount.width / 2 | 0;
     }
-    this.output.cursorTo(mount.left, mount.top);
+    this.cursorTo(mount.left, mount.top);
     this.output.write(message.color(bg || mount.bg));
     this.toCursor();
   },

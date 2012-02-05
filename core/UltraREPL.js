@@ -263,7 +263,7 @@ UltraREPL.prototype = {
   },
 
   header: function header(){
-    this.output.cursorTo(0, 0);
+    this.rli.cursorTo(0, 0);
     this.output.write(' '.repeat(this.width).color(style.info.header));
     this.pageLabel();
     this.rli.toCursor();

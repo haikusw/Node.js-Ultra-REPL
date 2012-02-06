@@ -5,7 +5,6 @@ var tty = require('tty');
 module.exports = UltraRLI;
 
 function UltraRLI(input, output, completer){
-  EventEmitter.call(this);
   var self = this;
 
   this.output = output;

@@ -20,7 +20,6 @@ function Highlighter(code, callback){
   if (typeof code !== 'string') {
     throw new TypeError('Code must be a string');
   }
-  EventEmitter.call(this);
   Object.defineProperties(this, {
     callback: { value: callback },
     history:  { value: [] },

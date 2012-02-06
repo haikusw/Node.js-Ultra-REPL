@@ -49,6 +49,7 @@ Script.wrap = function wrap(script, name){
 
 Script.cache = {};
 Script.fileCache = {};
+
 Script.scopeWrap = function scopeWrap(names, src){
   return '(function(global){'+
            'return function('+names+'){'+
@@ -57,12 +58,12 @@ Script.scopeWrap = function scopeWrap(names, src){
          '})(this)';
 }
 
-function tryrun(script, context){
+Script.tryrun = function tryrun(script, context){
   if (typeof script === 'string') script = Script.compile(script);
   if (script instanceof SyntaxError) {
     return { error: script };
   }
-  var method = context ? 'runInContext' : 'runInNewContext';
+  var method = context ? 'runInContext' : 'runInThisContext';
   try { return script[method](context) }
   catch (e) { return { error: e } }
 }
@@ -70,28 +71,31 @@ function tryrun(script, context){
 Script.prototype = {
   constructor: Script,
   run: function run(context){
-    return tryrun(this.wrap, context);
+    return Script.tryrun(this.wrap, context);
   },
+
   scoped: function scoped(context, scope){
     var names = Array.isArray(scope) ? scope : Object.getOwnPropertyNames(scope);
     names = names.filter(function(name){
       return !/$[a-zA-Z_$][\w_$]*$/.test(name);
     });
 
-    var unbound = tryrun(Script.scopeWrap(names, this.code), context);
-    if (!unbound || unbound.error) return unbound;
+    var unbound = Script.tryrun(Script.scopeWrap(names, this.code), context);
+    if (!unbound || unbound.error) {
+      return unbound;
+    }
 
-    function bind(scope){
-      try { return unbound.apply(scope, names.map(function(s){ return scope[s] })); }
+    function bind(scope, binding){
+      try { return unbound.apply(binding || scope, names.map(function(s){ return scope[s] })); }
       catch (e) { return { error: e } }
     }
     return Array.isArray(scope) ? bind : bind(scope);
   },
-  inspect: function inspect(formatter){
-    var code = this.code.slice(0, 40);
-    if (code.length === 40) code += '...';
-    return '<Script ' + (this.name?' '+this.name:'') + quotes(code) + '>';
-  }
+  // inspect: function inspect(formatter){
+  //   //var code = this.code.slice(0, 40);
+  //   if (code.length === 40) code += '...';
+  //   return '<Script >'// + //(this.name?' '+this.name:'') + quotes(code) + '>';
+  // }
 }
 
 

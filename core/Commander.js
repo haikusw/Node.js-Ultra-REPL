@@ -1,7 +1,8 @@
 var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 
 var Dict = require('../lib/Dict');
-
+var settings = require('../settings');
 var options = require('../settings/options');
 var style = require('../settings/styling');
 
@@ -77,11 +78,11 @@ Commander.prototype = {
 
   loadControls: function loadControls(file){
     var controls = require(file);
-    return controls(
-      function(x){ return { type: 'keywords', trigger: x } },
-      function(x){ return { type: 'command', trigger: x } },
-      function(x){ return { type: 'keybind', trigger: x } }
-    );
+    return typeof controls !== 'function' ? controls : controls(
+      function keywords(x){ return { type: 'keywords', trigger: x } },
+      function command(x){ return { type: 'command', trigger: x } },
+      function keybind(x){ return { type: 'keybind', trigger: x } },
+      function match(x){ return { type: 'match', trigger: x } });
   },
 
   loadPlugin: function loadPlugin(name){

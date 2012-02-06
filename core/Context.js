@@ -3,17 +3,17 @@ var vm = require('vm');
 
 var Script = require('./Script');
 var Results = require('./Results');
+var ScopedModule = require('./ScopedModule');
 
 var builtins = require('../lib/builtins');
+var options = require('../settings/options');
 var style = require('../settings/styling');
-var defaults = require('../settings/options').inspector;
 var names = require('../settings/text').names;
 var namecolors = style.context.names;
 
 var inspector = new Script(__dirname + '/inspect.js');
 
 var contexts = [];
-
 
 
 module.exports = Context;
@@ -33,8 +33,8 @@ function Context(globalSettings, isGlobal){
     displayName: { value: this.name.color(namecolors[contexts.length % namecolors.length]) }
   });
 
-  this.settings = Object.keys(defaults).reduce(function(r,s){
-    return r[s] = defaults[s], r;
+  this.settings = Object.keys(options.inspector).reduce(function(r,s){
+    return r[s] = options.inspector[s], r;
   }, {});
 
   this.initialize(globalSettings);
@@ -64,26 +64,17 @@ Context.prototype = {
       this.setGlobal();
       this.installPresets('node');
     }
-    var exports = new this.ctx.Object;
-    var module = new this.ctx.Object({
-      __proto__: Module.prototype,
-      filename: path.resolve(process.cwd(), this.name),
-      paths: process.mainModule.paths.slice(),
-      children: new this.ctx.Array,
-      id: '.',
-      parent: null,
-      get exports(){ return exports },
-      set exports(v){ exports = v },
-      exited: false,
-      loaded: true,
-    });
+
+    var _module = new ScopedModule(this.name+'.repl.js', '../')
+    var fakename = path.resolve(_module.filename, _module.id);
+    var exports = _module.exports;
     this.local = {
-      require: module.require,
-      module: module,
+      console: this.console,
+      require: _module.require,
+      module: _module,
       exports: exports,
-      __dirname: process.cwd(),
-      __filename: module.filename,
-      console: this.console
+      __dirname: path.dirname(fakename),
+      __filename: fakename
     };
     return this;
   },
@@ -147,7 +138,7 @@ Context.prototype = {
 
   clone: function clone(){
     var context = new this.constructor(this.isGlobal);
-    Object.keys(defaults).forEach(function(prop){
+    Object.keys(options.inspector).forEach(function(prop){
       context[prop] = this[prop];
     }, this);
     this.history.forEach(function(event){
@@ -158,12 +149,3 @@ Context.prototype = {
 };
 
 
-
-function Module(){}
-
-Module.prototype = {
-  constructor: Module,
-  require: function require(path){
-    return process.mainModule.require(path);
-  }
-};

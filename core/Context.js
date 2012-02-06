@@ -8,7 +8,7 @@ var ScopedModule = require('./ScopedModule');
 var builtins = require('../lib/builtins');
 var options = require('../settings/options');
 var style = require('../settings/styling');
-var names = require('../settings/text').names;
+var names = require('../lib/text').names;
 var namecolors = style.context.names;
 
 var inspector = new Script(__dirname + '/inspect.js');

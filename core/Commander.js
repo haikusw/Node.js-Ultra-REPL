@@ -2,7 +2,6 @@ var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 var Dict = require('../lib/Dict');
-var settings = require('../settings');
 var options = require('../settings/options');
 var style = require('../settings/styling');
 

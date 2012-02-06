@@ -11,9 +11,9 @@ var Dict         = require('../lib/Dict');
 
 var monkeypatch  = require('../lib/monkeypatch');
 var builtins     = require('../lib/builtins');
+var text         = require('../lib/text');
 
 var style        = require('../settings/styling');
-var text         = require('../settings/text');
 
 
 var width = process.stdout._type === 'tty' ? process.stdout.getWindowSize()[0] : 60;

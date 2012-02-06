@@ -3,8 +3,12 @@ module.exports = {
     builtins: true,
     hiddens: false,
     protos: true,
-    multiItemLines: true,
+    multiItemLines: false,
     depth: 4
+  },
+  execution: {
+    addCompletionsToGlobal: true,
+    codeIntel: true,
   },
   autoload: [
     'basic',

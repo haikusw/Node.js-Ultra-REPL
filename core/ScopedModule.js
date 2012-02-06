@@ -19,54 +19,71 @@ ScopedModule._cache = {};
 ScopedModule.main;
 
 
-ScopedModule._load = function(request, parent, isMain){
-  if (request in natives) return Module._load.apply(this, arguments);
+Object.defineProperties(ScopedModule, {
+  _cache: _({}),
+  main: _(null),
 
-  var filename = Module._resolveFilename(request, parent);
-  var cachedModule = ScopedModule._cache[filename];
-  if (cachedModule) {
-    return cachedModule.exports;
-  }
+  _load: _(function _load(request, parent, isMain){
+    if (request in natives) return Module._load.apply(this, arguments);
 
-  var _module = new ScopedModule(filename, parent, 'module');
+    var filename = Module._resolveFilename(request, parent);
+    var cached = ScopedModule._cache[filename];
+    if (cached) return cached.exports;
 
-  if (isMain) {
-    process.mainModule = _module;
-    _module.id = '.';
-  }
+    var _module = new ScopedModule(filename, parent, 'module');
 
-  ScopedModule._cache[filename] = _module;
-  try {
-    _module.load(filename);
-  } catch (err) {
-    delete ScopedModule._cache[filename];
-    throw err;
-  }
-
-  return _module.exports;
-}
-
-ScopedModule.upgradeModule = function(_module){
-  if (_module.constructor === Module) {
-    _module.__proto__ = ScopedModule.prototype;
-    _module.scope = {};
-    _module.name = _module.id || _module.filename;
-    if (_module.filename && _module.loaded === true) {
+    if (isMain) {
+      process.mainModule = _module;
+      _module.id = '.';
     }
-    if (!ScopedModule.main) ScopedModule.main = _module
-    var require = function require(path){
-      return ScopedModule.prototype.require.call(_module, path)
+
+    ScopedModule._cache[filename] = _module;
+
+    try { _module.load(filename) }
+    catch (err) { delete ScopedModule._cache[filename]; throw err; }
+
+    return _module.exports;
+  }),
+
+  upgradeModule: _(function upgradeModule(_module){
+    if (_module.constructor === Module) {
+      _module.__proto__ = ScopedModule.prototype;
+      _module.scope = {};
+      _module.name = _module.id || _module.filename;
+      if (_module.filename && _module.loaded === true) {
+      }
+      if (!ScopedModule.main) ScopedModule.main = _module
+      var require = function require(path){
+        return ScopedModule.prototype.require.call(_module, path)
+      }
+      require.resolve = function(request) {
+        return Module._resolveFilename(request, _module);
+      }
+      require.extensions = Module._extensions;
+      require.main = _module;
+      require.cache = ScopedModule._cache;
+      _module.require = require;
+      return require;
     }
-    require.resolve = function(request) {
-      return Module._resolveFilename(request, _module);
+  }),
+
+  wrap: _(function wrap(code, scope){
+    var scope = Array.isArray(scope) ? scope : Object.getOwnPropertyNames(scope);
+    var names = standard.concat(scope).filter(jsIdentifier);
+    var wrapper = vm.runInThisContext('(function ('+names+'){ '+code+'\n})');
+     
+    function run(scope){
+      return function(){
+        "use strict";
+        return wrapper.apply(this, names.map(function (s){ return scope[s] }));
+      }.call(this.exports);
     }
-    require.extensions = Module._extensions;
-    require.main = _module;
-    require.cache = ScopedModule._cache;
-    _module.require = require;
-    return require;
-  }
-}
+
+    return Array.isArray(scope) ? run : run.call(scope, scope);
+  })
+});
+
+
 
 
 var standard = ['exports','require','module','__filename','__dirname'];
@@ -76,28 +93,12 @@ function jsIdentifier(name){
 }
 
 
-ScopedModule.wrap = function wrap(code, scope){
-  var scope = Array.isArray(scope) ? scope : Object.getOwnPropertyNames(scope);
-  var names = standard.concat(scope).filter(jsIdentifier);
-  var wrapper = vm.runInThisContext('(function ('+names+'){ '+code+'\n})');
-   
-  function run(scope){
-    return function(){
-      "use strict";
-      return wrapper.apply(this, names.map(function (s){ return scope[s] }));
-    }.call(this.exports);
-  }
-
-  return Array.isArray(scope) ? run : run.call(scope, scope);
-}
-
-
-
-ScopedModule.prototype = {
-  __proto__: Module.prototype,
-  constructor: ScopedModule,
-
-  _compile: function _compile(content, filename){
+ScopedModule.prototype = Object.create(Module.prototype, {
+  constructor: _(ScopedModule),
+  require: _(function require(path){
+    return ScopedModule._load(path, this);
+  }),
+  _compile: _(function _compile(content, filename){
     var self = this;
 
     function require(path){
@@ -123,9 +124,9 @@ ScopedModule.prototype = {
     scopeArgs.__dirname = path.dirname(filename);
 
     return compiledWrapper.call(this, scopeArgs);
-  },
+  })
+})
 
-  require: function require(path){
-    return ScopedModule._load(path, this);
-  }
-}
+
+
+function _(v){ return { configurable: true, writable: true, value: v } }

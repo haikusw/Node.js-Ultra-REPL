@@ -201,13 +201,15 @@ UltraREPL.prototype = {
       output.push(header(result.error.message, style.errorbg));
       if (result.status === 'SyntaxError') {
         output.push(result.script.code);
-      } else if (typeof result.error.stack === 'string') {
-        var where = result.error.stack.split('\n')[1].split(':');
-        var line = where[where.length - 2] - 1;
+      } else if (typeof result.error.stack === 'string' && result.script && result.script.code) {
+        var stack = result.error.stack.split('\n');
+        var where = stack[1].split(':');
+        var line = where[where.length - 2] - 2;
         var column = where[where.length - 1] - 1;
         output.push(' '+result.script.code.split('\n')[line]+'\n '+' '.repeat(column) + '^');
       } else {
-        //this.context.ctx.callsites = result.error.stack;
+        result.script && output.push(result.script.code);
+        result.error && output.push(result.error.stack);
       }
     }
 

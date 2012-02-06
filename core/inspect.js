@@ -292,7 +292,7 @@ function formatValue(value, key, depth, settings) {
     }
     if (primitive) {
       if (settings.multiItemLines) {
-        if (maxlength < maxwidth / 2) {
+        if (maxlength < maxwidth / 2 && total > maxwidth / 2) {
           output = [chunk(', ', [maxwidth - 30, maxwidth], 0, output)];
         }
       } else if (total < maxwidth) {

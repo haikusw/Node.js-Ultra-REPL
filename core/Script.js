@@ -52,7 +52,7 @@ Script.fileCache = {};
 Script.scopeWrap = function scopeWrap(names, src){
   return '(function(global){'+
            'return function('+names+'){'+
-             'return('+src+'\n)'+
+             'return(\n'+src+'\n)'+
            '}.bind(global)'+
          '})(this)';
 }

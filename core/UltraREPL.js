@@ -114,6 +114,7 @@ function UltraREPL(options){
 
   this.commands.on('keybind', handler);
   this.commands.on('keyword', handler);
+  this.commands.on('match', handler);
 
   this.pages = new Results.Rendered;
   this.loadScreen();
@@ -283,6 +284,7 @@ UltraREPL.prototype = {
   },
 
   generateHelp: function generateHelp(help, screenW){
+    var self = this;
     var nameW = str.widest(help, 'name') + 2;
     var triggerW = str.widest(help, 'trigger') + 2;
     var helpL = nameW + triggerW + 2;
@@ -301,6 +303,10 @@ UltraREPL.prototype = {
         out.trigger = '';
       } else {
         out.help = out.help.align(helpR, helpL);
+      }
+      if (Object(out.trigger) === out.trigger && Object.getPrototypeOf(out.trigger) === RegExp.prototype) {
+        out.help += '\n' + ' '.repeat(helpL + 2) + (''+out.trigger).color(style.inspector.RegExp);
+        out.trigger = '';
       }
       out = out.name.pad(nameW).color(style.help.names) +
             out.trigger.pad(triggerW).color(style.help[out.type]) +

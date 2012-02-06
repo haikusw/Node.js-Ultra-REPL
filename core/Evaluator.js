@@ -31,6 +31,7 @@ Evaluator.prototype = {
   get name(){ return this.contexts.current.name },
   get ctx(){ return this.contexts.current.ctx },
   get local(){ return this.contexts.current.local },
+  set local(v){ this.contexts.current.local = v },
   set name(v){ this.contexts.current.name = v },
 
   view: function view(){

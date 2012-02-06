@@ -18,6 +18,7 @@ function Commander(rli){
   var controls = this.controls = this.loadControls('../settings/controls');
   var keybinds = this.keybinds = new Dict;
   var keywords = this.keywords = new Dict;
+  var matches = this.matches = [];
 
   var self = this;
 
@@ -49,6 +50,7 @@ function Commander(rli){
       kws.forEach(function(kw){ keywords[kw] = action });
     },
     command: function(cmd, action){ keywords[cmd] = action  },
+    match: function(match, action){ matches.push({ pattern: match, action: action }) }
   };
 
   rli.on('keybind', function(key){
@@ -114,6 +116,14 @@ Commander.prototype = {
       if (m !== null && this.keywords.has(m[1])) {
         this.emit('keyword', this.keywords[m[1]], m[1], m[2]);
         return true;
+      } else {
+        return this.matches.some(function(handler){
+          var match = cmd.match(handler.pattern);
+          if (match) {
+            this.emit('match', handler.action, match[0], match.slice(1));
+            return true;
+          }
+        }, this);
       }
     }
     return false;

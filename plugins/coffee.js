@@ -1,8 +1,9 @@
 var coffee = require('coffee-script');
-var heritable = require('../lib/object-utils').heritable;
-var Context = require('../core/Context');
+
+var heritable = require('../lib/utility/object-utils').heritable;
+var isError = require('../lib/utility/object-utils').is('Error');
+var Context = require('../lib/Context');
 var style = require('../settings/styling');
-var isError = require('../lib/object-utils').is('Error');
 
 var CoffeeContext = heritable({
   constructor: function CoffeeContext(){

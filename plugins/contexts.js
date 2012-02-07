@@ -1,5 +1,5 @@
-var builtins = require('../lib/builtins');
-var isError = require('../lib/object-utils').is('Error');
+var builtins = require('../data/builtins');
+var isError = require('../lib/utility/object-utils').is('Error');
 var style = require('../settings/styling');
 
 

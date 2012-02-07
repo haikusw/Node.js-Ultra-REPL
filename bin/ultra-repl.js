@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
-var ScopedModule = require('../core/ScopedModule');
+var ScopedModule = require('../lib/ScopedModule');
 
+module = new ScopedModule;
 module.__proto__ = ScopedModule.prototype;
 process.mainModule.__proto__ = ScopedModule.prototype;
 
-function init(){
-	var UltraREPL = require('../core/UltraREPL');
-	new UltraREPL;
-}
 
-
-init();
+var UltraREPL = require('../lib/UltraREPL');
+new UltraREPL;

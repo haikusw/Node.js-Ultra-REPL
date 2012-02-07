@@ -2,8 +2,9 @@ var fs = require('fs');
 var path = require('path');
 var exists = fs.existsSync || path.existsSync;
 
-var hidden = require('../lib/object-utils').lazyProperty;
-var Grid = require('../lib/Grid');
+
+var hidden = require('../lib/utility/object-utils').lazyProperty;
+var Grid = require('../lib/structs/Grid');
 
 module.exports = [
   { name: 'Current Directory',
@@ -117,5 +118,3 @@ Object.defineProperty(fs.Stats.prototype, 'type', {
   enumerable: true,
   configurable: true
 });
-
-

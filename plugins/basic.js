@@ -1,5 +1,5 @@
-var builtins = require('../lib/builtins');
-var Results = require('../core/Results');
+var builtins = require('../data/builtins');
+var Results = require('../lib/Results');
 
 module.exports = [
   { name: 'Command List',

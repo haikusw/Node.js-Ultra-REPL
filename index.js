@@ -1,1 +1,1 @@
-module.exports = require('./core/UltraREPL');
+module.exports = require('./lib/UltraREPL');

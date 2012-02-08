@@ -1,11 +1,6 @@
 #!/usr/bin/env node
-
+var path = require('path');
 var ScopedModule = require('../lib/ScopedModule');
 
-module = new ScopedModule;
-module.__proto__ = ScopedModule.prototype;
-process.mainModule.__proto__ = ScopedModule.prototype;
-
-
-var UltraREPL = require('../lib/UltraREPL');
-new UltraREPL;
+var UltraREPL = ScopedModule._load(path.resolve(__dirname, '../lib/UltraREPL'), null, true);
+process.nextTick(function(){ new UltraREPL });

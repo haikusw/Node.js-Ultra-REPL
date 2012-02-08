@@ -65,15 +65,3 @@ module.exports = [
     }
   }
 ];
-  // { name: 'Experimental Context',
-  //   help: 'Loads a new context including a custom version of the NativeModule as well as all new core modules.',
-  //   defaultTrigger: { type: 'keybind', trigger: 'alt+3' },
-  //   action: function(cmd, name){
-  //     var NodeContext = require('../core/NodeContext');
-  //     var context = new NodeContext(this.settings);
-  //     this.context.add(context);
-  //     context.initProcess();
-  //     context.initEmptyMain();
-  //     return context;
-  //   }
-  // }

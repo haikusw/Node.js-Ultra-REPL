@@ -1,4 +1,6 @@
 var style = require('../settings/styling');
+var Results = require('../lib/Results');
+var Script = require('../lib/Script');
 
 function toggle(obj, prop){
   return function(){
@@ -51,4 +53,26 @@ module.exports = [
       this.displayPrompt();
     }
   },
+  { name: 'Inspect Real Global',
+    help: 'Show the real global, which should be isolated from anything running in the repl.',
+    defaultTrigger: { type: 'keybind', trigger: 'f8' },
+    action: function(){ return real.context.call(this) }
+  },
 ]
+var real = { context: realinit };
+
+function realinit(){
+  var globalContext = this.context.current.constructor.inspector.wrap.runInThisContext()(
+    this.context.current.settings,
+    this.settings,
+    require('../data/builtins'),
+    style.inspector
+  );
+  real.context = function(){
+    var globals  = globalContext.globals();
+    delete globals.process;
+    delete globals.Buffer;
+    return globalContext.inspector(globals);
+  }
+  return real.context();
+}

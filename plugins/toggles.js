@@ -36,6 +36,11 @@ module.exports = [
     defaultTrigger: { type: 'keybind', trigger: 'f5' },
     action: toggle('currentSettings', 'multiItemLines')
   },
+  { name: 'Global/Local',
+    help: 'Switch between running code in a private local scope or globally (both in current context',
+    defaultTrigger: { type: 'keybind', trigger: 'f6' },
+    action: toggle('currentSettings', 'globalExec')
+  },
   { name: 'Colors',
     help: 'Toggle whether output is colored.',
     defaultTrigger: { type: 'keybind', trigger: 'f9' },

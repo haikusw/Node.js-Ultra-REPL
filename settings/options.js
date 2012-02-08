@@ -4,6 +4,7 @@ module.exports = {
     hiddens: false,
     protos: true,
     multiItemLines: false,
+    globalExec: false,
     depth: 4
   },
   execution: {

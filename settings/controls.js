@@ -9,7 +9,6 @@ module.exports = function(keywords, command, keybind){
     'Inspect Context'               : keybind('ctrl+z'),
 
     'Stack Trace'                   : keybind('alt+s'),
-    'Require'                       : command('.r'),
     'Load Plugin'                   : command('.plugin'),
 
     'Delete Right'                  : keybind('del'),
@@ -37,6 +36,7 @@ module.exports = function(keywords, command, keybind){
     'Builtins'                      : keybind('f3'),
     '__proto__'                     : keybind('f4'),
     'Multi-item Lines'              : keybind('f5'),
+    'Global/Local'                  : keybind('f6'),
     'Depth--'                       : keybind('alt+1'),
     'Depth++'                       : keybind('alt+2'),
     'Colors'                        : keybind('f9'),

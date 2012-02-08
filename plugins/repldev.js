@@ -17,7 +17,7 @@ module.exports = [
     help: 'Adds a reference to the live repl object to the current context local scope.',
     defaultTrigger: { type: 'keybind', trigger: 'f12' },
     action: function(){
-      return this.context.local.repl = this;
+      return this.context.current.locals.repl = this;
     }
   },
   { name: 'Key Display',

@@ -23,52 +23,6 @@ module.exports = [
       return new Results.Success(this.context.current, null, result, null, 'Built-in Lib "'+lib+'"');
     }
   },
-  { name: 'Set/View Local',
-    help: 'View the current or set a new object which is local scoped for executed code.',
-    defaultTrigger: { type: 'match', trigger: /^locals\.?([a-zA-Z_\$][a-zA-Z0-9_\$]*)?(?:\s*=\s*(.*))?$/ },
-    action: function(cmd, match){
-      if (match[1]) {
-        var result = this.context.run('(function(){return '+match[1]+'\n})()');
-        if (result.status === 'Success') {
-          if (match[0]) {
-            this.context.local[match[0]] = result.completion;
-            result.label = 'Locals.'+match[0];
-          } else {
-            this.context.local = result.completion;
-            result.label = 'Locals';
-          }
-          return result;
-        } 
-      } else if (match[0]) {
-        var result = this.context.local[match[0]];
-        var label = 'Locals.'+match[0];
-      } else {
-        var result = this.context.local;
-        var label = 'Locals';
-      }
-      return new Results.Success(this.context.current, null, result, null, label);
-    }
-  },
-  { name: 'Require',
-    help: 'Require for contexts without exposing require to the context.',
-    defaultTrigger: { type: 'command', trigger: '.r' },
-    action: function(cmd, input){
-      var parts = input.split(' ');
-      var name = parts.pop();
-      try {var lib = require(name) } catch (e) { return e }
-      if (parts.length) {
-        name = parts.pop();
-      } else if (Object(lib) === lib) {
-        if (lib.name && lib.name.length) {
-          name = lib.name;
-        } else if (typeof lib === 'object' && Object.getOwnPropertyNames(lib).length === 1) {
-          name = Object.getOwnPropertyNames(lib)[0];
-          lib = lib[name];
-        }
-      }
-      return new Results.Success(this.context.current, null, this.context.ctx[name] = lib, null, 'Required lib "'+name+'"');
-    }
-  },
   { name: 'Inspect Context',
     help: 'Shortcut for writing `this` to inspect the current context.',
     defaultTrigger: { type: 'keybind', trigger: 'ctrl+z' },

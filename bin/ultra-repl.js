@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-var path = require('path');
-var ScopedModule = require('../lib/ScopedModule');
 
-setTimeout(function(){
-	var UltraREPL = ScopedModule._load(path.resolve(__dirname, '../lib/UltraREPL.js'), null, true);
-  new UltraREPL;
-}, 50)
 
+var UltraREPL = require('../');
+UltraREPL();

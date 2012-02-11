@@ -1,8 +1,6 @@
-var path = require('path');
-var natives = process.binding('natives');
-var style = require('../settings/styling');
-
+var natives = process.binding('natives')
 var repl;
+
 module.exports = [
   {
     name: 'Stack Trace',

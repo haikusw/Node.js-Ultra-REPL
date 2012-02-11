@@ -1,24 +1,21 @@
-var fs = require('fs');
-var path = require('path');
 var spawn = require('child_process').spawn;
 
 var heritable = require('../lib/util/object-utils').heritable;
 var isError = require('../lib/util/object-utils').is('Error');
 var Context = require('../lib/Context');
-var style = require('../settings/styling');
 
 var loc = path.resolve(__dirname, 'spidermonkey', 'js.exe');
 
 module.exports = [
   { name: 'Spidermonkey Context',
     help: 'Create a context that runs code using SpiderMonkey.',
-    defaultTrigger: { type: 'command', trigger: '.sm' },
+    defaultTrigger: api.command('.sm'),
     action: function(){
       var result = this.context.add(new SpiderMonkeyContext);
       if (isError(result)) {
-        result = result.message.color(style.error);
+        result = result.message.color(styling.error);
       } else {
-        result = 'created SpiderMonkey Context '.color(style.context.create) + result.name;
+        result = 'created SpiderMonkey Context '.color(styling.context.create) + result.name;
       }
       this.rli.timedWrite('topright', result, 'bgbblack');
       this.refresh();

@@ -1,16 +1,9 @@
-var path = require('path');
 var esprima = require('esprima');
-var builtins = require('../data/builtins');
-var options = require('../settings/options');
-var style = require('../settings/styling');
-
-
-//module.exports = command;function init(ultraREPL){}
 
 module.exports = [{
     name: 'Generate AST',
     help: 'Use Esprima to generate AST for code to further debug and modify it.',
-    defaultTrigger: { type: 'command', trigger: '.ast' },
+    defaultTrigger: api.command('.ast'),
 
     action: function(cmd, target){
       // search executed code history first
@@ -41,17 +34,7 @@ module.exports = [{
   },
   { name: 'Analyze Input',
     help: 'Enables analysis of REPL input using Esprima in order to allow for code intel based actions.',
-    defaultTrigger: { type: 'command', trigger: '.analyze' },
-    action: toggle(options.execution, 'codeIntel')
+    defaultTrigger: api.command('.analyze'),
+    action: api.toggle(options.execution, 'codeIntel')
 }];
 
-
-
-function toggle(obj, prop){
-  return function(){
-    obj[prop] = !obj[prop];
-    var prompt = obj[prop] ? '++' : '--';
-    this.refresh();
-    this.timedPrompt(prop, style.prompt[prompt]);
-  }
-}

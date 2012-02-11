@@ -1,7 +1,7 @@
 module.exports = [
   { name: 'Next Page',
     help: 'Next page of results.',
-    defaultTrigger: { type: 'keybind', trigger: 'pgdn' },
+    defaultTrigger: api.keybind('pgdn'),
     action: function(){
       if (this.pages.length) {
         this.rli.writePage(this.pages.next());
@@ -11,7 +11,7 @@ module.exports = [
   },
   { name: 'Previous Page',
     help: 'Previous page of results.\n',
-    defaultTrigger: { type: 'keybind', trigger: 'pgup' },
+    defaultTrigger: api.keybind('pgup'),
     action: function(){
       if (this.pages.length) {
         this.rli.writePage(this.pages.prev());
@@ -43,7 +43,7 @@ function cmd(name, trigger){
   return {
     name: name,
     help: false,
-    defaultTrigger: { type: 'keybind', trigger: trigger },
+    defaultTrigger: api.keybind(trigger),
     action: function(){ this.rli[fnName]() }
   }
 }

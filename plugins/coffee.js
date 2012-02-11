@@ -3,7 +3,6 @@ var coffee = require('coffee-script');
 var heritable = require('../lib/utility/object-utils').heritable;
 var isError = require('../lib/utility/object-utils').is('Error');
 var Context = require('../lib/Context');
-var style = require('../settings/styling');
 
 var CoffeeContext = heritable({
   constructor: function CoffeeContext(){
@@ -25,7 +24,7 @@ var CoffeeContext = heritable({
 module.exports = [{
   name: 'Create Coffee Context',
   help: 'Create a new context that evaluates input as CoffeeScript',
-  defaultTrigger: { type: 'keybind', trigger: 'alt+c' },
+  defaultTrigger: api.keybind('alt+c'),
   action: function(){
     var result = this.context.add(new CoffeeContext);
     if (isError(result)) {

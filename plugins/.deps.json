@@ -1,0 +1,11 @@
+[
+  {
+    "providers": [ "../lib/api.js",
+                   "../settings/",
+                   "../data/",
+                   "fs",
+                   "path" ],
+
+    "receivers": [ "*" ]
+  }
+]

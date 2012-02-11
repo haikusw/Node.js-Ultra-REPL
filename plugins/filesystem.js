@@ -1,5 +1,3 @@
-var fs = require('fs');
-var path = require('path');
 var exists = fs.existsSync || path.existsSync;
 
 
@@ -8,7 +6,7 @@ var hidden = require('../lib/utility/object-utils').lazyProperty;
 module.exports = [
   { name: 'Current Directory',
     help: 'List the files in the current working directory',
-    defaultTrigger: { type: 'command', trigger: '.dir' },
+    defaultTrigger: api.command('.dir'),
     action: function(cmd, dir){
       dir = readStats(path.resolve(dir.trim() || process.cwd()));
       this.context.ctx.dir = dir;

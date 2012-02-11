@@ -1,35 +1,24 @@
-var style = require('../settings/styling');
 var Results = require('../lib/Results');
 var Script = require('../lib/Script');
 
-function toggle(obj, prop){
-  return function(){
-    if (typeof prop === 'undefined') {
-      var result = (this[obj] ^= true);
-    } else {
-      var result = (this[obj][prop] ^= true);
-    }
-    result = result ? '++' : '--';
-    this.timedPrompt(result + (prop || obj), style.prompt[result]);
-  }
-}
+
 
 module.exports = [
   { name: 'Inject REPL',
     help: 'Adds a reference to the live repl object to the current context local scope.',
-    defaultTrigger: { type: 'keybind', trigger: 'f12' },
+    defaultTrigger: api.keybind('f12'),
     action: function(){
       return this.context.current.locals.repl = this;
     }
   },
   { name: 'Key Display',
     help: 'Toggle displaying what keys are pressed.',
-    defaultTrigger: { type: 'keybind', trigger: 'f11' },
-    action: toggle('keydisplay')
+    defaultTrigger: api.keybind('f11'),
+    action: api.toggle('keydisplay')
   },
   { name: 'Color Test',
     help: 'Test ANSI colors\n',
-    defaultTrigger: { type: 'keybind', trigger: 'f10' },
+    defaultTrigger: api.keybind('f10'),
     action: function(){
       this.rli.clearScreen();
       this.header();
@@ -55,7 +44,7 @@ module.exports = [
   },
   { name: 'Inspect Real Global',
     help: 'Show the real global, which should be isolated from anything running in the repl.',
-    defaultTrigger: { type: 'keybind', trigger: 'f8' },
+    defaultTrigger: api.keybind('f8'),
     action: function(){ return real.context.call(this) }
   },
 ]
@@ -65,8 +54,8 @@ function realinit(){
   var globalContext = this.context.current.constructor.inspector.wrap.runInThisContext()(
     this.context.current.settings,
     this.settings,
-    require('../data/builtins'),
-    style.inspector
+    builtins,
+    styling.inspector
   );
   real.context = function(){
     var globals  = globalContext.globals();

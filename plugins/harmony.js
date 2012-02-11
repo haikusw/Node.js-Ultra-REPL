@@ -4,7 +4,7 @@ var exists = fs.existsSync || path.existsSync;
 
 
 // npm install direct-proxies
-var shim = require('direct-proxies').shim;
+var shim = require('direct-proxies');
 
 
 

@@ -1,6 +1,7 @@
 [
   {
     "providers": [ "./utility/",
+                   "./classes/",
                    "../settings/styling.js" ],
 
     "receivers": [ "*" ]

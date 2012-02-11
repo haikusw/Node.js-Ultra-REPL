@@ -4,7 +4,6 @@ var exists = fs.existsSync || path.existsSync;
 
 
 var hidden = require('../lib/utility/object-utils').lazyProperty;
-var Grid = require('../lib/structs/Grid');
 
 module.exports = [
   { name: 'Current Directory',

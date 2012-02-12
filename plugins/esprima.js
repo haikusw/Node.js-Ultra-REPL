@@ -1,4 +1,5 @@
 var esprima = require('esprima');
+var highlight = require('../lib/Highlighter.js')
 
 module.exports = [{
     name: 'Generate AST',
@@ -32,9 +33,21 @@ module.exports = [{
       }
     },
   },
-  { name: 'Analyze Input',
-    help: 'Enables analysis of REPL input using Esprima in order to allow for code intel based actions.',
-    defaultTrigger: api.command('.analyze'),
-    action: api.toggle(options.execution, 'codeIntel')
-}];
+  // { name: 'Analyze Input',
+  //   help: 'Enables analysis of REPL input using Esprima in order to allow for code intel based actions.',
+  //   defaultTrigger: api.command('.analyze'),
+  //   action: api.toggle(options.execution, 'codeIntel')
+  // },
+  { name: 'Save Code',
+    help: 'Format and output REPL code from this context',
+    defaultTrigger: api.command('.save'),
+    action: function(){
+      var code = this.context.current.getExecutedCode();
+      var ast = esprima.parse(code);
+      code = esprima.generate(ast, { indent: '  ' });
+      this.emit('save', code)
+      return highlight(code);
+    }
+  }
+];
 

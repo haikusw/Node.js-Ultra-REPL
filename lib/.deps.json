@@ -2,7 +2,7 @@
   {
     "providers": [ "./utility/",
                    "./classes/",
-                   "../settings/styling.js" ],
+                   "../settings/" ],
 
     "receivers": [ "*" ]
   }

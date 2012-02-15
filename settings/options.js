@@ -17,7 +17,6 @@ module.exports = {
     'toggles',
     'contexts',
     'repldev',
-    'filesystem',
-    'debug',
+    'library'
   ]
-}
+};

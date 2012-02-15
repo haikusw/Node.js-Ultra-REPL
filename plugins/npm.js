@@ -1,19 +1,27 @@
-var npm = require('npm');
+var EventEmitter = require('events').EventEmitter;
 
-npm.load(function(e,NPM){
-  npm.on('output', function(){ npm.output = null });
+var npm;
+var log = new EventEmitter;
+
+require('npm').load(function(e,NPM){
+  NPM.on('output', function(){
+    log.emit('message', NPM.output.message);
+    NPM.output = null;
+  });
   npm = NPM;
 });
 
-
 module.exports = [
-  { name: 'NPM Search',
-    help: 'Search NPM for modules matching the given term.',
-    defaultTrigger: api.command('.search'),
-    action: function(cmd, term){
-      npm.search(term, function(e, data){
-        this.writer(data);
-      }.bind(this))
+  { name: 'npm command',
+    help: 'Execute an npm command.',
+    defaultTrigger: api.command('.npm'),
+    action: function(cmd, params){
+      var self = this;
+      params = params.split(' ');
+      cmd = params.shift();
+      npm[cmd](params.join(' '), function(e, data){
+        self.writer(data);
+      });
     }
   }
 ];

@@ -2,19 +2,19 @@
   "author": "Brandon Benvie <brandon@bbenvie.com> (http://bbenvie.com)",
   "name": "ultra-repl",
   "description": "Starting with Node's built in REPL, add in a completely redone inspect formatter, actual functioning separate V8 contexts, keybindings to create, switch, and delete between them, combine it with a bunch of color. ULTRA REPL.",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "keywords": ["repl", "context", "colors", "command line", "cli", "editor", "tty", "options", "toggle"],
   "homepage": "https://github.com/Benvie/Node.js-Ultra-REPL",
   "repository": {
     "type": "git",
     "url": "git://github.com/Benvie/Node.js-Ultra-REPL.git"
   },
-  "main": "./index.js",
+  "main": "index.js",
   "engines": {
     "node": "0.6"
   },
   "bin": {
-    "ultra-repl": "./bin/ultra-repl.js"
+    "ultra-repl": "bin/ultra-repl.js"
   },
   "dependencies": {
     "esprima": "0.9.7"

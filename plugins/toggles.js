@@ -9,7 +9,7 @@ module.exports = [
     defaultTrigger: api.keybind('f3'),
     action: api.toggle('currentSettings', 'builtins')
   },
-  { name: '__proto__',
+  { name: '[[proto]]',
     help: 'Toggle whether [[prototype]] trees are displayed.',
     defaultTrigger: api.keybind('f4'),
     action: api.toggle('currentSettings', 'protos')

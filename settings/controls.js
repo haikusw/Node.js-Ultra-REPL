@@ -34,7 +34,7 @@ module.exports = function(keywords, command, keybind){
     // Toggles
     'Hiddens'                       : keybind('f2'),
     'Builtins'                      : keybind('f3'),
-    '__proto__'                     : keybind('f4'),
+    '[[proto]]'                     : keybind('f4'),
     'Multi-item Lines'              : keybind('f5'),
     'Global/Local'                  : keybind('f6'),
     'Depth--'                       : keybind('alt+1'),

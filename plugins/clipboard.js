@@ -48,7 +48,7 @@ module.exports = {
             obj = obj.completion || obj.globals || obj.error;
           }
           this.context.current.locals.clipboard = obj;
-          return new Results(this.context.current, null, obj, null, 'Pasted object to local variables as "clipboard"')
+          return new Results(this.context.current, null, obj, null, 'Pasted object to local variables as "clipboard"');
 
         } else if ('json' in items) {
 

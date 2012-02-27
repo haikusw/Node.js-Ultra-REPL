@@ -1,5 +1,5 @@
 // windows bindings for now, need to add others to clipboard module
-if (process.platform !== 'win32') return [];
+if (process.platform !== 'win32') return module.exports = [];
 
 var clipboard = require('clipboard');
 var Results = require('../lib/Results').Success
